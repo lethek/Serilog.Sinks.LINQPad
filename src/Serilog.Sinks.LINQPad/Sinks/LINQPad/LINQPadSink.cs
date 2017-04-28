@@ -22,6 +22,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 using Serilog.Parsing;
+using System.Security;
 
 namespace Serilog.Sinks.LINQPad
 {
@@ -65,7 +66,7 @@ namespace Serilog.Sinks.LINQPad
 							var propertyToken = outputToken as PropertyToken;
 							if (propertyToken == null) {
 								RenderOutputToken(palette, outputToken, outputProperties, output);
-							} else
+							} else {
 								switch (propertyToken.PropertyName) {
 									case OutputProperties.MessagePropertyName:
 										RenderMessageToken(logEvent, palette, output);
@@ -77,6 +78,7 @@ namespace Serilog.Sinks.LINQPad
 										RenderOutputToken(palette, outputToken, outputProperties, output);
 										break;
 								}
+							}
 						}
 					} finally {
 						Util.RawHtml(output.ToString()).Dump();
@@ -97,7 +99,7 @@ namespace Serilog.Sinks.LINQPad
 					} else {
 						StartHighlightColors(output, palette);
 					}
-					output.WriteLine(nextLine);
+					output.WriteLine(SecurityElement.Escape(nextLine));
 					CloseColors(output);
 				}
 			}
@@ -112,7 +114,10 @@ namespace Serilog.Sinks.LINQPad
 				} else {
 					StartBaseColors(output, palette);
 				}
-				messageToken.Render(logEvent.Properties, output, _formatProvider);
+				using (var writer = new StringWriter()) {
+					messageToken.Render(logEvent.Properties, writer, _formatProvider);
+					output.Write(SecurityElement.Escape(writer.ToString()));
+				}
 				CloseColors(output);
 			}
 		}
@@ -120,7 +125,10 @@ namespace Serilog.Sinks.LINQPad
 		private void RenderOutputToken(Palette palette, MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, TextWriter output)
 		{
 			StartBaseColors(output, palette);
-			outputToken.Render(outputProperties, output, _formatProvider);
+			using (var writer = new StringWriter()) {
+				outputToken.Render(outputProperties, writer, _formatProvider);
+				output.Write(SecurityElement.Escape(writer.ToString()));
+			}
 			CloseColors(output);
 		}
 
