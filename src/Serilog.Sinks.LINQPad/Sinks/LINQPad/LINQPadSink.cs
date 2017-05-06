@@ -59,77 +59,95 @@ namespace Serilog.Sinks.LINQPad
 
 			var outputProperties = OutputProperties.GetOutputProperties(logEvent);
 			var palette = GetPalette(logEvent.Level);
+			var state = new ConsoleColorState();
+
 			using (var output = new StringWriter(_formatProvider)) {
 				lock (_syncRoot) {
 					try {
 						foreach (var outputToken in _outputTemplate.Tokens) {
 							var propertyToken = outputToken as PropertyToken;
 							if (propertyToken == null) {
-								RenderOutputToken(palette, outputToken, outputProperties, output);
+								RenderOutputToken(palette, outputToken, outputProperties, output, state);
 							} else {
 								switch (propertyToken.PropertyName) {
 									case OutputProperties.MessagePropertyName:
-										RenderMessageToken(logEvent, palette, output);
+										RenderMessageToken(logEvent, palette, output, state);
 										break;
 									case OutputProperties.ExceptionPropertyName:
-										RenderExceptionToken(palette, propertyToken, outputProperties, output);
+										RenderExceptionToken(palette, propertyToken, outputProperties, output, state);
 										break;
 									default:
-										RenderOutputToken(palette, outputToken, outputProperties, output);
+										RenderOutputToken(palette, outputToken, outputProperties, output, state);
 										break;
 								}
 							}
 						}
 					} finally {
-						Util.RawHtml(output.ToString()).Dump();
+						if (state.Colors != null) {
+							CloseColors(output, state);
+						}
+						Util.RawHtml($"<span style='white-space:pre-wrap'>{output.ToString()}</span>").Dump();
 					}
 				}
 			}
 		}
 
-		private void RenderExceptionToken(Palette palette, MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, TextWriter output)
+		private void RenderExceptionToken(Palette palette, MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, TextWriter output, ConsoleColorState state)
 		{
 			using (var sw = new StringWriter()) {
 				outputToken.Render(outputProperties, sw, _formatProvider);
 				var lines = new StringReader(sw.ToString());
 				string nextLine;
 				while ((nextLine = lines.ReadLine()) != null) {
-					if (nextLine.StartsWith(StackFrameLinePrefix)) {
-						StartBaseColors(output, palette);
-					} else {
-						StartHighlightColors(output, palette);
+					var newColors = nextLine.StartsWith(StackFrameLinePrefix)
+						? palette.Base
+						: palette.Highlight;
+
+					if (AreColorsDifferent(state.Colors, newColors)) {
+						if (state.Colors.HasValue) {
+							CloseColors(output, state);
+						}
+						StartColors(output, state, newColors);
 					}
+
 					output.WriteLine(SecurityElement.Escape(nextLine));
-					CloseColors(output);
 				}
 			}
 		}
 
-		private void RenderMessageToken(LogEvent logEvent, Palette palette, TextWriter output)
+		private void RenderMessageToken(LogEvent logEvent, Palette palette, TextWriter output, ConsoleColorState state)
 		{
 			foreach (var messageToken in logEvent.MessageTemplate.Tokens) {
-				var messagePropertyToken = messageToken as PropertyToken;
-				if (messagePropertyToken != null) {
-					StartHighlightColors(output, palette);
-				} else {
-					StartBaseColors(output, palette);
+				var newColors = (messageToken as PropertyToken) != null
+					? palette.Highlight
+					: palette.Base;
+
+				if (AreColorsDifferent(state.Colors, newColors)) {
+					if (state.Colors.HasValue) {
+						CloseColors(output, state);
+					}
+					StartColors(output, state, newColors);
 				}
+
 				using (var writer = new StringWriter()) {
 					messageToken.Render(logEvent.Properties, writer, _formatProvider);
 					output.Write(SecurityElement.Escape(writer.ToString()));
 				}
-				CloseColors(output);
 			}
 		}
 
-		private void RenderOutputToken(Palette palette, MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, TextWriter output)
+		private void RenderOutputToken(Palette palette, MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, TextWriter output, ConsoleColorState state)
 		{
-			StartBaseColors(output, palette);
+			if (AreColorsDifferent(state.Colors, palette.Base)) {
+				if (state.Colors.HasValue) {
+					CloseColors(output, state);
+				}
+				StartColors(output, state, palette.Base);
+			}
 			using (var writer = new StringWriter()) {
 				outputToken.Render(outputProperties, writer, _formatProvider);
 				output.Write(SecurityElement.Escape(writer.ToString()));
 			}
-			CloseColors(output);
 		}
 
 		private static Palette GetPalette(LogEventLevel level)
@@ -141,63 +159,67 @@ namespace Serilog.Sinks.LINQPad
 			return palette;
 		}
 
-		private static void StartBaseColors(TextWriter output, Palette palette)
+		private static bool AreColorsDifferent(ConsoleColorPair? current, ConsoleColorPair? next)
+			=> current?.Background != next?.Background || current?.Foreground != next?.Foreground;
+
+
+		private static void StartColors(TextWriter output, ConsoleColorState state, ConsoleColorPair newColors)
 		{
-			StartColors(output, palette.Base, palette.BaseText);
+			output.Write($"<span style='color:{newColors.Foreground}; background-color:{newColors.Background}'>");
+			state.Colors = newColors;
 		}
 
-		private static void StartHighlightColors(TextWriter output, Palette palette)
+		private static void CloseColors(TextWriter output, ConsoleColorState state)
 		{
-			StartColors(output, palette.Highlight, palette.HighlightText);
-		}
-
-		private static void CloseColors(TextWriter output)
-		{
-			output.Write("</font>");
-		}
-
-		private static void StartColors(TextWriter output, ConsoleColor background, ConsoleColor foreground)
-		{
-			output.Write("<font style='color:" + foreground + "; background-color:" + background + "'>");
+			output.Write("</span>");
+			state.Colors = null;
 		}
 
 
 		private readonly IFormatProvider _formatProvider;
 
 		private static readonly Palette DefaultPalette = new Palette {
-			Base = ConsoleColor.Black,
-			BaseText = ConsoleColor.Gray,
-			Highlight = ConsoleColor.DarkGray,
-			HighlightText = ConsoleColor.Gray
+			Base = new ConsoleColorPair { Background = ConsoleColor.Black, Foreground = ConsoleColor.Gray },
+			Highlight = new ConsoleColorPair { Background = ConsoleColor.DarkGray, Foreground = ConsoleColor.Gray }
 		};
 
+
 		private static readonly IDictionary<LogEventLevel, Palette> LevelPalettes = new Dictionary<LogEventLevel, Palette>
-        {
-            { LogEventLevel.Verbose,     new Palette { Base = ConsoleColor.White, BaseText = ConsoleColor.DarkGray,
-                                                       Highlight = ConsoleColor.White, HighlightText = ConsoleColor.Gray } },
-            { LogEventLevel.Debug,       new Palette { Base = ConsoleColor.White, BaseText = ConsoleColor.Gray,
-                                                       Highlight = ConsoleColor.White, HighlightText = ConsoleColor.Black } },
-            { LogEventLevel.Information, new Palette { Base = ConsoleColor.White, BaseText = ConsoleColor.Black,
-                                                       Highlight = ConsoleColor.DarkBlue, HighlightText = ConsoleColor.White } },
-            { LogEventLevel.Warning,     new Palette { Base = ConsoleColor.White, BaseText = ConsoleColor.Yellow,
-                                                       Highlight = ConsoleColor.DarkYellow, HighlightText = ConsoleColor.Black } },
-            { LogEventLevel.Error,       new Palette { Base = ConsoleColor.White, BaseText = ConsoleColor.Red,
-                                                       Highlight = ConsoleColor.Red, HighlightText = ConsoleColor.White } },
-            { LogEventLevel.Fatal,       new Palette { Base = ConsoleColor.DarkRed, BaseText = ConsoleColor.Black,
-                                                       Highlight = ConsoleColor.Red, HighlightText = ConsoleColor.White } }
-        };
+		{
+			{ LogEventLevel.Verbose,     new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.DarkGray },
+													   Highlight = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Gray } } },
+			{ LogEventLevel.Debug,       new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Gray },
+													   Highlight = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Black } } },
+			{ LogEventLevel.Information, new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Black },
+													   Highlight = new ConsoleColorPair { Background = ConsoleColor.DarkBlue, Foreground = ConsoleColor.White } } },
+			{ LogEventLevel.Warning,     new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Yellow },
+													   Highlight = new ConsoleColorPair { Background = ConsoleColor.DarkYellow, Foreground = ConsoleColor.Black } } },
+			{ LogEventLevel.Error,       new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Red },
+													   Highlight = new ConsoleColorPair { Background = ConsoleColor.Red, Foreground = ConsoleColor.White } } },
+			{ LogEventLevel.Fatal,       new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.DarkRed, Foreground = ConsoleColor.Black },
+													   Highlight = new ConsoleColorPair { Background = ConsoleColor.Red, Foreground = ConsoleColor.White } } }
+		};
 
 		private readonly object _syncRoot = new object();
 		private readonly MessageTemplate _outputTemplate;
 
 		private const string StackFrameLinePrefix = "   ";
 
-		private class Palette
+		private struct ConsoleColorPair
 		{
-			public ConsoleColor Base { get; set; }
-			public ConsoleColor BaseText { get; set; }
-			public ConsoleColor Highlight { get; set; }
-			public ConsoleColor HighlightText { get; set; }
+			public ConsoleColor Foreground { get; set; }
+			public ConsoleColor Background { get; set; }
+		}
+
+		private class ConsoleColorState
+		{
+			public ConsoleColorPair? Colors { get; set; }
+		}
+
+		private struct Palette
+		{
+			public ConsoleColorPair Base { get; set; }
+			public ConsoleColorPair Highlight { get; set; }
 		}
 
 	}
