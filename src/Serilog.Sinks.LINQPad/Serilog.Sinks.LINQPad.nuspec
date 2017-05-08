@@ -12,7 +12,7 @@
     <iconUrl>http://serilog.net/images/serilog-sink-nuget.png</iconUrl>
     <tags>serilog logging linqpad</tags>
     <dependencies>
-      <dependency id="Serilog" version="1.4.0.0" />
+      <dependency id="Serilog" version="2.0.0.0" />
     </dependencies>
   </metadata>
 </package>
