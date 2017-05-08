@@ -98,7 +98,7 @@ namespace Serilog.Sinks.LINQPad
 		}
 
 
-		private bool _isOpen = false;
+		private bool _isOpen;
 		
 		private readonly ColorPair _nextColors = new ColorPair();
 		private readonly ColorPair _currColors = new ColorPair();

@@ -8,8 +8,33 @@ namespace Serilog.Sinks.LINQPad
 	/// Defines a customizable color-palette for use by the Serilog LINQPad sink.
 	/// The default colors are intended for use on a white background.
 	/// </summary>
-	public class OutputPalette
+	public class ColorScheme
 	{
+
+		/// <summary>
+		/// Creates a new ColorScheme with initial colours selected for use on white/light backgrounds
+		/// </summary>
+		/// <returns>New ColorScheme instance</returns>
+		public static ColorScheme CreateLightScheme()
+			=> new ColorScheme();
+
+
+		/// <summary>
+		/// Creates a new ColorScheme with initial colours selected for use on black/dark backgrounds
+		/// </summary>
+		/// <returns>New ColorScheme instance</returns>
+		public static ColorScheme CreateDarkScheme()
+			=> new ColorScheme {
+				Text = new ColorPair(Color.White),
+				InformationLevel = new ColorPair(Color.White),
+				WarningLevel = new ColorPair(Color.Yellow),
+				KeywordSymbol = new ColorPair(Color.RoyalBlue),
+				StringSymbol = new ColorPair(Color.Cyan),
+				OtherSymbol = new ColorPair(Color.LawnGreen),
+				RawText = new ColorPair(Color.Yellow)
+			};
+		
+
 		/// <summary>
 		/// Default: new ColorPair(Color.Black)
 		/// </summary>

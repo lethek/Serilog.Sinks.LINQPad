@@ -63,7 +63,7 @@
     <Compile Include="Sinks\LINQPad\LINQPadSink.cs" />
     <Compile Include="LoggerConfigurationLINQPadExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sinks\LINQPad\OutputPalette.cs" />
+    <Compile Include="Sinks\LINQPad\ColorScheme.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

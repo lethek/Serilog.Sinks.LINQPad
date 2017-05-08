@@ -34,21 +34,23 @@ namespace Serilog
 		/// <param name="restrictedToMinimumLevel">The minimum level for events passed through the sink.</param>
 		/// <param name="outputTemplate">A message template describing the format used to write to the sink. The default is "[{Timestamp} {Level}] {Message}{NewLine}{Exception}".</param>
 		/// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
-		/// <param name="outputPalette">Supplies custom a color-palette for rendered output. If none is specified, then the default <see cref="LINQPadSink.DefaultPalette"/> is used instead.</param>
+		/// <param name="colorScheme">Supplies custom a color-scheme for rendered output. If none is specified, then by default, the static <see cref="LINQPadSink.DefaultColors"/> instance is used instead.</param>
 		/// <returns>Configuration object allowing method chaining.</returns>
 		public static LoggerConfiguration LINQPad(
 			this LoggerSinkConfiguration sinkConfiguration,
 			LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
 			string outputTemplate = DefaultOutputTemplate,
 			IFormatProvider formatProvider = null,
-			OutputPalette outputPalette = null)
+			ColorScheme colorScheme = null)
 		{
 			if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
 			if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
-			return sinkConfiguration.Sink(new LINQPadSink(outputTemplate, formatProvider, outputPalette), restrictedToMinimumLevel);
+			return sinkConfiguration.Sink(new LINQPadSink(outputTemplate, formatProvider, colorScheme), restrictedToMinimumLevel);
 		}
 
-		const string DefaultOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message}{NewLine}{Exception}";
+
+		private const string DefaultOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message}{NewLine}{Exception}";
+
 	}
 
 }

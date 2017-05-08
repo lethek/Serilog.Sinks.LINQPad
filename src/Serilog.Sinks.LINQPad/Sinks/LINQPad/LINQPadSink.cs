@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Reflection;
 
@@ -35,32 +34,9 @@ namespace Serilog.Sinks.LINQPad
 	{
 
 		/// <summary>
-		/// Defines the default color-palette used by this sink, by default it uses colors chosen for use on white backgrounds
+		/// Defines the default color-scheme used by this sink. By default it uses colors chosen for use on white backgrounds.
 		/// </summary>
-		public static readonly OutputPalette DefaultPalette = CreateLightPalette();
-
-
-		/// <summary>
-		/// Creates a new OutputPalette for use on white/light backgrounds
-		/// </summary>
-		/// <returns>New OutputPalette instance</returns>
-		public static OutputPalette CreateLightPalette()
-			=> new OutputPalette();
-
-
-		/// <summary>
-		/// Creates a new OutputPalette for use on black/dark backgrounds
-		/// </summary>
-		/// <returns>New OutputPalette instance</returns>
-		public static OutputPalette CreateDarkPalette()
-			=> new OutputPalette {
-				Text = new ColorPair(Color.White),
-				InformationLevel = new ColorPair(Color.White),
-				WarningLevel = new ColorPair(Color.Yellow),
-				StringSymbol = new ColorPair(Color.Cyan),
-				OtherSymbol = new ColorPair(Color.LawnGreen),
-				RawText = new ColorPair(Color.Yellow)
-			};
+		public static readonly ColorScheme DefaultColors = ColorScheme.CreateLightScheme();
 
 
 		/// <summary>
@@ -68,22 +44,22 @@ namespace Serilog.Sinks.LINQPad
 		/// </summary>
 		/// <param name="outputTemplate">A message template describing the format used to write to the sink.</param>
 		/// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
-		/// <param name="outputPalette">Supplies custom a color-palette for rendered output. If none is specified, then the default <see cref="LINQPadSink.DefaultPalette"/> is used instead.</param>
-		public LINQPadSink(string outputTemplate, IFormatProvider formatProvider, OutputPalette outputPalette = null)
+		/// <param name="colorScheme">Supplies custom a color-scheme for rendered output. If none is specified, then by default, the static <see cref="DefaultColors"/> instance is used instead.</param>
+		public LINQPadSink(string outputTemplate, IFormatProvider formatProvider, ColorScheme colorScheme = null)
 		{
 			if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
 
 			_outputTemplate = new MessageTemplateParser().Parse(outputTemplate);
 			_formatProvider = formatProvider;
-			_palette = outputPalette ?? DefaultPalette;
+			_colors = colorScheme ?? DefaultColors;
 
 			_levels = new Dictionary<LogEventLevel, Func<ColorPair>> {
-				{ LogEventLevel.Verbose, () => _palette.VerboseLevel },
-				{ LogEventLevel.Debug, () => _palette.DebugLevel },
-				{ LogEventLevel.Information, () => _palette.InformationLevel },
-				{ LogEventLevel.Warning, () => _palette.WarningLevel },
-				{ LogEventLevel.Error, () => _palette.ErrorLevel },
-				{ LogEventLevel.Fatal, () => _palette.FatalLevel }
+				{ LogEventLevel.Verbose, () => _colors.VerboseLevel },
+				{ LogEventLevel.Debug, () => _colors.DebugLevel },
+				{ LogEventLevel.Information, () => _colors.InformationLevel },
+				{ LogEventLevel.Warning, () => _colors.WarningLevel },
+				{ LogEventLevel.Error, () => _colors.ErrorLevel },
+				{ LogEventLevel.Fatal, () => _colors.FatalLevel }
 			};
 		}
 
@@ -135,7 +111,7 @@ namespace Serilog.Sinks.LINQPad
 			var lines = new StringReader(sw.ToString());
 			string nextLine;
 			while ((nextLine = lines.ReadLine()) != null) {
-				outputStream.SetColors(nextLine.StartsWith(StackFrameLinePrefix) ? _palette.Subtext : _palette.Text);
+				outputStream.SetColors(nextLine.StartsWith(StackFrameLinePrefix) ? _colors.Subtext : _colors.Text);
 				outputStream.WriteLine(nextLine);
 			}
 		}
@@ -143,7 +119,7 @@ namespace Serilog.Sinks.LINQPad
 
 		private void RenderOutputTemplatePropertyToken(PropertyToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, ColoredStringWriter outputStream)
 		{
-			outputStream.SetColors(_palette.Subtext);
+			outputStream.SetColors(_colors.Subtext);
 
 			// This code is shared with MessageTemplateFormatter in the core Serilog
 			// project. Its purpose is to modify the way tokens are formatted to
@@ -185,7 +161,7 @@ namespace Serilog.Sinks.LINQPad
 
 		private void RenderOutputTemplateTextToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, ColoredStringWriter outputStream)
 		{
-			outputStream.SetColors(_palette.Punctuation);
+			outputStream.SetColors(_colors.Punctuation);
 			outputToken.Render(outputProperties, outputStream, _formatProvider);
 		}
 
@@ -197,7 +173,7 @@ namespace Serilog.Sinks.LINQPad
 				if (messagePropertyToken != null) {
 					LogEventPropertyValue value;
 					if (!logEvent.Properties.TryGetValue(messagePropertyToken.PropertyName, out value)) {
-						outputStream.SetColors(_palette.RawText);
+						outputStream.SetColors(_colors.RawText);
 						outputStream.Write(messagePropertyToken);
 					} else {
 						var scalar = value as ScalarValue;
@@ -216,7 +192,7 @@ namespace Serilog.Sinks.LINQPad
 						}
 					}
 				} else {
-					outputStream.SetColors(_palette.Text);
+					outputStream.SetColors(_colors.Text);
 					messageToken.Render(logEvent.Properties, outputStream, _formatProvider);
 				}
 			}
@@ -234,19 +210,19 @@ namespace Serilog.Sinks.LINQPad
 
 			var seq = value as SequenceValue;
 			if (seq != null) {
-				outputStream.SetColors(_palette.Punctuation);
+				outputStream.SetColors(_colors.Punctuation);
 				outputStream.Write("[");
 
 				var sep = "";
 				foreach (var element in seq.Elements) {
-					outputStream.SetColors(_palette.Punctuation);
+					outputStream.SetColors(_colors.Punctuation);
 					outputStream.Write(sep);
 					sep = ", ";
 
 					PrettyPrint(element, null, formatProvider, outputStream);
 				}
 
-				outputStream.SetColors(_palette.Punctuation);
+				outputStream.SetColors(_colors.Punctuation);
 				outputStream.Write("]");
 				return;
 			}
@@ -254,54 +230,54 @@ namespace Serilog.Sinks.LINQPad
 			var str = value as StructureValue;
 			if (str != null) {
 				if (str.TypeTag != null) {
-					outputStream.SetColors(_palette.Subtext);
+					outputStream.SetColors(_colors.Subtext);
 					outputStream.Write(str.TypeTag);
 					outputStream.Write(" ");
 				}
 
-				outputStream.SetColors(_palette.Punctuation);
+				outputStream.SetColors(_colors.Punctuation);
 				outputStream.Write("{");
 
 				var sep = "";
 				foreach (var prop in str.Properties) {
-					outputStream.SetColors(_palette.Punctuation);
+					outputStream.SetColors(_colors.Punctuation);
 					outputStream.Write(sep);
 					sep = ", ";
 
-					outputStream.SetColors(_palette.NameSymbol);
+					outputStream.SetColors(_colors.NameSymbol);
 					outputStream.Write(prop.Name);
 
-					outputStream.SetColors(_palette.Punctuation);
+					outputStream.SetColors(_colors.Punctuation);
 					outputStream.Write("=");
 
 					PrettyPrint(prop.Value, null, formatProvider, outputStream);
 				}
 
-				outputStream.SetColors(_palette.Punctuation);
+				outputStream.SetColors(_colors.Punctuation);
 				outputStream.Write("}");
 				return;
 			}
 
 			var div = value as DictionaryValue;
 			if (div != null) {
-				outputStream.SetColors(_palette.Punctuation);
+				outputStream.SetColors(_colors.Punctuation);
 				outputStream.Write("{");
 
 				var sep = "";
 				foreach (var element in div.Elements) {
-					outputStream.SetColors(_palette.Punctuation);
+					outputStream.SetColors(_colors.Punctuation);
 					outputStream.Write(sep);
 					sep = ", ";
 					outputStream.Write("[");
 					PrettyPrint(element.Key, null, formatProvider, outputStream);
 
-					outputStream.SetColors(_palette.Punctuation);
+					outputStream.SetColors(_colors.Punctuation);
 					outputStream.Write("]=");
 
 					PrettyPrint(element.Value, null, formatProvider, outputStream);
 				}
 
-				outputStream.SetColors(_palette.Punctuation);
+				outputStream.SetColors(_colors.Punctuation);
 				outputStream.Write("}");
 				return;
 			}
@@ -313,21 +289,21 @@ namespace Serilog.Sinks.LINQPad
 		private ColorPair GetScalarColor(ScalarValue scalar)
 		{
 			if (scalar.Value == null || scalar.Value is bool)
-				return _palette.KeywordSymbol;
+				return _colors.KeywordSymbol;
 
 			if (scalar.Value is string)
-				return _palette.StringSymbol;
+				return _colors.StringSymbol;
 
 			if (scalar.Value.GetType().GetTypeInfo().IsPrimitive || scalar.Value is decimal)
-				return _palette.NumericSymbol;
+				return _colors.NumericSymbol;
 
-			return _palette.OtherSymbol;
+			return _colors.OtherSymbol;
 		}
 
 
 		private const string StackFrameLinePrefix = "   ";
 
-		private readonly OutputPalette _palette;
+		private readonly ColorScheme _colors;
 		private readonly IFormatProvider _formatProvider;
 		private readonly MessageTemplate _outputTemplate;
 		private readonly object _syncRoot = new Object();
