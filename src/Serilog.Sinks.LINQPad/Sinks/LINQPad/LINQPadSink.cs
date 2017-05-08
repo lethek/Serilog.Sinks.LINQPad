@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 
@@ -34,9 +35,32 @@ namespace Serilog.Sinks.LINQPad
 	{
 
 		/// <summary>
-		/// Defines the default color-palette used by this sink
+		/// Defines the default color-palette used by this sink, by default it uses colors chosen for use on white backgrounds
 		/// </summary>
-		public static readonly OutputPalette DefaultPalette = new OutputPalette();
+		public static readonly OutputPalette DefaultPalette = CreateLightPalette();
+
+
+		/// <summary>
+		/// Creates a new OutputPalette for use on white/light backgrounds
+		/// </summary>
+		/// <returns>New OutputPalette instance</returns>
+		public static OutputPalette CreateLightPalette()
+			=> new OutputPalette();
+
+
+		/// <summary>
+		/// Creates a new OutputPalette for use on black/dark backgrounds
+		/// </summary>
+		/// <returns>New OutputPalette instance</returns>
+		public static OutputPalette CreateDarkPalette()
+			=> new OutputPalette {
+				Text = new ColorPair(Color.White),
+				InformationLevel = new ColorPair(Color.White),
+				WarningLevel = new ColorPair(Color.Yellow),
+				StringSymbol = new ColorPair(Color.Cyan),
+				OtherSymbol = new ColorPair(Color.LawnGreen),
+				RawText = new ColorPair(Color.Yellow)
+			};
 
 
 		/// <summary>

@@ -5,7 +5,8 @@ namespace Serilog.Sinks.LINQPad
 {
 
 	/// <summary>
-	/// Defines a customizable color-palette for use by the Serilog LINQPad sink
+	/// Defines a customizable color-palette for use by the Serilog LINQPad sink.
+	/// The default colors are intended for use on a white background.
 	/// </summary>
 	public class OutputPalette
 	{
@@ -35,9 +36,9 @@ namespace Serilog.Sinks.LINQPad
 		/// </summary>
 		public ColorPair InformationLevel { get; set; } = new ColorPair(Color.Black);
 		/// <summary>
-		/// Default: new ColorPair(Color.Yellow)
+		/// Default: new ColorPair(Color.Black, Color.Yellow)
 		/// </summary>
-		public ColorPair WarningLevel { get; set; } = new ColorPair(Color.Yellow);
+		public ColorPair WarningLevel { get; set; } = new ColorPair(Color.Black, Color.Yellow);
 		/// <summary>
 		/// Default: new ColorPair(Color.White, Color.Red)
 		/// </summary>
@@ -56,21 +57,21 @@ namespace Serilog.Sinks.LINQPad
 		/// </summary>
 		public ColorPair NumericSymbol { get; set; } = new ColorPair(Color.Magenta);
 		/// <summary>
-		/// Default: new ColorPair(Color.Cyan)
+		/// Default: new ColorPair(Color.DarkCyan)
 		/// </summary>
-		public ColorPair StringSymbol { get; set; } = new ColorPair(Color.Cyan);
+		public ColorPair StringSymbol { get; set; } = new ColorPair(Color.DarkCyan);
 		/// <summary>
 		/// Default: new ColorPair(Color.Green)
 		/// </summary>
 		public ColorPair OtherSymbol { get; set; } = new ColorPair(Color.Green);
 		/// <summary>
-		/// Default: new ColorPair(Color.Black)
+		/// Default: new ColorPair(Color.Gray)
 		/// </summary>
-		public ColorPair NameSymbol { get; set; } = new ColorPair(Color.Black);
+		public ColorPair NameSymbol { get; set; } = new ColorPair(Color.Gray);
 		/// <summary>
-		/// Default: new ColorPair(Color.Yellow)
+		/// Default: new ColorPair(Color.Orange)
 		/// </summary>
-		public ColorPair RawText { get; set; } = new ColorPair(Color.Yellow);
+		public ColorPair RawText { get; set; } = new ColorPair(Color.Orange);
 	}
 
 }
