@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Reflection;
 
@@ -35,15 +34,33 @@ namespace Serilog.Sinks.LINQPad
 	{
 
 		/// <summary>
+		/// Defines the default color-palette used by this sink
+		/// </summary>
+		public static readonly OutputPalette DefaultPalette = new OutputPalette();
+
+
+		/// <summary>
 		/// Construct a sink that writes colored log events to LINQPad's Results panel.
 		/// </summary>
 		/// <param name="outputTemplate">A message template describing the format used to write to the sink.</param>
 		/// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
-		public LINQPadSink(string outputTemplate, IFormatProvider formatProvider)
+		/// <param name="outputPalette">Supplies custom a color-palette for rendered output. If none is specified, then the default <see cref="LINQPadSink.DefaultPalette"/> is used instead.</param>
+		public LINQPadSink(string outputTemplate, IFormatProvider formatProvider, OutputPalette outputPalette = null)
 		{
 			if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
+
 			_outputTemplate = new MessageTemplateParser().Parse(outputTemplate);
 			_formatProvider = formatProvider;
+			_palette = outputPalette ?? DefaultPalette;
+
+			_levels = new Dictionary<LogEventLevel, Func<ColorPair>> {
+				{ LogEventLevel.Verbose, () => _palette.VerboseLevel },
+				{ LogEventLevel.Debug, () => _palette.DebugLevel },
+				{ LogEventLevel.Information, () => _palette.InformationLevel },
+				{ LogEventLevel.Warning, () => _palette.WarningLevel },
+				{ LogEventLevel.Error, () => _palette.ErrorLevel },
+				{ LogEventLevel.Fatal, () => _palette.FatalLevel }
+			};
 		}
 
 
@@ -64,19 +81,19 @@ namespace Serilog.Sinks.LINQPad
 							if (propertyToken == null) {
 								RenderOutputTemplateTextToken(outputToken, outputProperties, outputStream);
 							} else switch (propertyToken.PropertyName) {
-								case OutputProperties.LevelPropertyName:
-									RenderLevelToken(logEvent.Level, outputToken, outputProperties, outputStream);
-									break;
-								case OutputProperties.MessagePropertyName:
-									RenderMessageToken(logEvent, outputStream);
-									break;
-								case OutputProperties.ExceptionPropertyName:
-									RenderExceptionToken(propertyToken, outputProperties, outputStream);
-									break;
-								default:
-									RenderOutputTemplatePropertyToken(propertyToken, outputProperties, outputStream);
-									break;
-							}
+									case OutputProperties.LevelPropertyName:
+										RenderLevelToken(logEvent.Level, outputToken, outputProperties, outputStream);
+										break;
+									case OutputProperties.MessagePropertyName:
+										RenderMessageToken(logEvent, outputStream);
+										break;
+									case OutputProperties.ExceptionPropertyName:
+										RenderExceptionToken(propertyToken, outputProperties, outputStream);
+										break;
+									default:
+										RenderOutputTemplatePropertyToken(propertyToken, outputProperties, outputStream);
+										break;
+								}
 						}
 					} finally {
 						outputStream.ResetColor();
@@ -94,7 +111,7 @@ namespace Serilog.Sinks.LINQPad
 			var lines = new StringReader(sw.ToString());
 			string nextLine;
 			while ((nextLine = lines.ReadLine()) != null) {
-				outputStream.ForegroundColor = nextLine.StartsWith(StackFrameLinePrefix) ? Subtext : Text;
+				outputStream.SetColors(nextLine.StartsWith(StackFrameLinePrefix) ? _palette.Subtext : _palette.Text);
 				outputStream.WriteLine(nextLine);
 			}
 		}
@@ -102,7 +119,7 @@ namespace Serilog.Sinks.LINQPad
 
 		private void RenderOutputTemplatePropertyToken(PropertyToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, ColoredStringWriter outputStream)
 		{
-			outputStream.ForegroundColor = Subtext;
+			outputStream.SetColors(_palette.Subtext);
 
 			// This code is shared with MessageTemplateFormatter in the core Serilog
 			// project. Its purpose is to modify the way tokens are formatted to
@@ -132,16 +149,10 @@ namespace Serilog.Sinks.LINQPad
 
 		private void RenderLevelToken(LogEventLevel level, MessageTemplateToken token, IReadOnlyDictionary<string, LogEventPropertyValue> properties, ColoredStringWriter outputStream)
 		{
-			LevelFormat format;
-			if (!_levels.TryGetValue(level, out format))
-				format = _levels[LogEventLevel.Warning];
+			if (!_levels.TryGetValue(level, out var getLevelColors))
+				getLevelColors = _levels[LogEventLevel.Warning];
 
-			outputStream.ForegroundColor = format.Color;
-
-			if (level == LogEventLevel.Error || level == LogEventLevel.Fatal) {
-				outputStream.BackgroundColor = format.Color;
-				outputStream.ForegroundColor = Color.White;
-			}
+			outputStream.SetColors(getLevelColors());
 
 			token.Render(properties, outputStream);
 			outputStream.ResetColor();
@@ -150,7 +161,7 @@ namespace Serilog.Sinks.LINQPad
 
 		private void RenderOutputTemplateTextToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, ColoredStringWriter outputStream)
 		{
-			outputStream.ForegroundColor = Punctuation;
+			outputStream.SetColors(_palette.Punctuation);
 			outputToken.Render(outputProperties, outputStream, _formatProvider);
 		}
 
@@ -162,12 +173,12 @@ namespace Serilog.Sinks.LINQPad
 				if (messagePropertyToken != null) {
 					LogEventPropertyValue value;
 					if (!logEvent.Properties.TryGetValue(messagePropertyToken.PropertyName, out value)) {
-						outputStream.ForegroundColor = RawText;
+						outputStream.SetColors(_palette.RawText);
 						outputStream.Write(messagePropertyToken);
 					} else {
 						var scalar = value as ScalarValue;
 						if (scalar != null) {
-							outputStream.ForegroundColor = GetScalarColor(scalar);
+							outputStream.SetColors(GetScalarColor(scalar));
 
 							if (scalar.Value is string && messagePropertyToken.Format == null && messagePropertyToken.Alignment == null) {
 								outputStream.Write(scalar.Value);
@@ -181,7 +192,7 @@ namespace Serilog.Sinks.LINQPad
 						}
 					}
 				} else {
-					outputStream.ForegroundColor = Text;
+					outputStream.SetColors(_palette.Text);
 					messageToken.Render(logEvent.Properties, outputStream, _formatProvider);
 				}
 			}
@@ -192,26 +203,26 @@ namespace Serilog.Sinks.LINQPad
 		{
 			var scalar = value as ScalarValue;
 			if (scalar != null) {
-				outputStream.ForegroundColor = GetScalarColor(scalar);
+				outputStream.SetColors(GetScalarColor(scalar));
 				value.Render(outputStream, format, formatProvider);
 				return;
 			}
 
 			var seq = value as SequenceValue;
 			if (seq != null) {
-				outputStream.ForegroundColor = Punctuation;
+				outputStream.SetColors(_palette.Punctuation);
 				outputStream.Write("[");
 
 				var sep = "";
 				foreach (var element in seq.Elements) {
-					outputStream.ForegroundColor = Punctuation;
+					outputStream.SetColors(_palette.Punctuation);
 					outputStream.Write(sep);
 					sep = ", ";
 
 					PrettyPrint(element, null, formatProvider, outputStream);
 				}
 
-				outputStream.ForegroundColor = Punctuation;
+				outputStream.SetColors(_palette.Punctuation);
 				outputStream.Write("]");
 				return;
 			}
@@ -219,54 +230,54 @@ namespace Serilog.Sinks.LINQPad
 			var str = value as StructureValue;
 			if (str != null) {
 				if (str.TypeTag != null) {
-					outputStream.ForegroundColor = Subtext;
+					outputStream.SetColors(_palette.Subtext);
 					outputStream.Write(str.TypeTag);
 					outputStream.Write(" ");
 				}
 
-				outputStream.ForegroundColor = Punctuation;
+				outputStream.SetColors(_palette.Punctuation);
 				outputStream.Write("{");
 
 				var sep = "";
 				foreach (var prop in str.Properties) {
-					outputStream.ForegroundColor = Punctuation;
+					outputStream.SetColors(_palette.Punctuation);
 					outputStream.Write(sep);
 					sep = ", ";
 
-					outputStream.ForegroundColor = NameSymbol;
+					outputStream.SetColors(_palette.NameSymbol);
 					outputStream.Write(prop.Name);
 
-					outputStream.ForegroundColor = Punctuation;
+					outputStream.SetColors(_palette.Punctuation);
 					outputStream.Write("=");
 
 					PrettyPrint(prop.Value, null, formatProvider, outputStream);
 				}
 
-				outputStream.ForegroundColor = Punctuation;
+				outputStream.SetColors(_palette.Punctuation);
 				outputStream.Write("}");
 				return;
 			}
 
 			var div = value as DictionaryValue;
 			if (div != null) {
-				outputStream.ForegroundColor = Punctuation;
+				outputStream.SetColors(_palette.Punctuation);
 				outputStream.Write("{");
 
 				var sep = "";
 				foreach (var element in div.Elements) {
-					outputStream.ForegroundColor = Punctuation;
+					outputStream.SetColors(_palette.Punctuation);
 					outputStream.Write(sep);
 					sep = ", ";
 					outputStream.Write("[");
 					PrettyPrint(element.Key, null, formatProvider, outputStream);
 
-					outputStream.ForegroundColor = Punctuation;
+					outputStream.SetColors(_palette.Punctuation);
 					outputStream.Write("]=");
 
 					PrettyPrint(element.Value, null, formatProvider, outputStream);
 				}
 
-				outputStream.ForegroundColor = Punctuation;
+				outputStream.SetColors(_palette.Punctuation);
 				outputStream.Write("}");
 				return;
 			}
@@ -275,64 +286,29 @@ namespace Serilog.Sinks.LINQPad
 		}
 
 
-		private Color GetScalarColor(ScalarValue scalar)
+		private ColorPair GetScalarColor(ScalarValue scalar)
 		{
 			if (scalar.Value == null || scalar.Value is bool)
-				return KeywordSymbol;
+				return _palette.KeywordSymbol;
 
 			if (scalar.Value is string)
-				return StringSymbol;
+				return _palette.StringSymbol;
 
 			if (scalar.Value.GetType().GetTypeInfo().IsPrimitive || scalar.Value is decimal)
-				return NumericSymbol;
+				return _palette.NumericSymbol;
 
-			return OtherSymbol;
-		}
-
-
-		private class LevelFormat
-		{
-			public LevelFormat(Color color)
-			{
-				Color = color;
-			}
-			public Color Color { get; }
+			return _palette.OtherSymbol;
 		}
 
 
 		private const string StackFrameLinePrefix = "   ";
 
+		private readonly OutputPalette _palette;
 		private readonly IFormatProvider _formatProvider;
 		private readonly MessageTemplate _outputTemplate;
 		private readonly object _syncRoot = new Object();
 
-		private readonly IDictionary<LogEventLevel, LevelFormat> _levels = new Dictionary<LogEventLevel, LevelFormat> {
-			{ LogEventLevel.Verbose, new LevelFormat(VerboseLevel) },
-			{ LogEventLevel.Debug, new LevelFormat(DebugLevel) },
-			{ LogEventLevel.Information, new LevelFormat(InformationLevel) },
-			{ LogEventLevel.Warning, new LevelFormat(WarningLevel) },
-			{ LogEventLevel.Error, new LevelFormat(ErrorLevel) },
-			{ LogEventLevel.Fatal, new LevelFormat(FatalLevel) }
-		};
-
-		private static readonly Color
-			Text = Color.Black,
-			Subtext = Color.Gray,
-			Punctuation = Color.DarkGray,
-
-			VerboseLevel = Color.Gray,
-			DebugLevel = VerboseLevel,
-			InformationLevel = Color.Black,
-			WarningLevel = Color.Yellow,
-			ErrorLevel = Color.Red,
-			FatalLevel = ErrorLevel,
-
-			KeywordSymbol = Color.Blue,
-			NumericSymbol = Color.Magenta,
-			StringSymbol = Color.Cyan,
-			OtherSymbol = Color.Green,
-			NameSymbol = Subtext,
-			RawText = Color.Yellow;
+		private readonly IDictionary<LogEventLevel, Func<ColorPair>> _levels;
 
 	}
 

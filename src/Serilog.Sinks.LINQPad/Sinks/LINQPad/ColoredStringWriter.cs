@@ -21,15 +21,15 @@ namespace Serilog.Sinks.LINQPad
 
 		public Color? ForegroundColor
 		{
-			get => _currForegroundColor;
-			set => _nextForegroundColor = value;
+			get => _currColors.Foreground;
+			set => _nextColors.Foreground = value;
 		}
 
 
 		public Color? BackgroundColor
 		{
-			get => _currBackgroundColor;
-			set => _nextBackgroundColor = value;
+			get => _currColors.Background;
+			set => _nextColors.Background = value;
 		}
 
 
@@ -60,44 +60,49 @@ namespace Serilog.Sinks.LINQPad
 
 		public void ResetColor()
 		{
-			if (isOpen) {
+			if (_isOpen) {
 				base.Write("</span>");
-				_nextForegroundColor = null;
-				_nextBackgroundColor = null;
-				isOpen = false;
+				_nextColors.Foreground = null;
+				_nextColors.Background = null;
+				_isOpen = false;
 			}
+		}
+
+
+		public void SetColors(ColorPair colors)
+		{
+			_nextColors.Foreground = colors.Foreground;
+			_nextColors.Background = colors.Background;
 		}
 
 
 		private void UpdateColors()
 		{
-			if (!isOpen || _currForegroundColor != _nextForegroundColor || _currBackgroundColor != _nextBackgroundColor) {
-				if (isOpen) {
+			if (!_isOpen || _currColors.Foreground != _nextColors.Foreground || _currColors.Background != _nextColors.Background) {
+				if (_isOpen) {
 					base.Write("</span>");
 				}
 
 				var declarations = new[] {
-					_nextForegroundColor.HasValue ? $"color:{ColorTranslator.ToHtml(_nextForegroundColor.Value)}" : null,
-					_nextBackgroundColor.HasValue ? $"background-color:{ColorTranslator.ToHtml(_nextBackgroundColor.Value)}" : null
+					_nextColors.Foreground.HasValue ? $"color:{ColorTranslator.ToHtml(_nextColors.Foreground.Value)}" : null,
+					_nextColors.Background.HasValue ? $"background-color:{ColorTranslator.ToHtml(_nextColors.Background.Value)}" : null
 				};
 				var style = String.Join("; ", declarations.Where(x => x != null));
 				if (style.Length > 0) {
 					base.Write($"<span style='{style}'>");
-					_currForegroundColor = _nextForegroundColor;
-					_currBackgroundColor = _nextBackgroundColor;
-					isOpen = true;
+					_currColors.Foreground = _nextColors.Foreground;
+					_currColors.Background = _nextColors.Background;
+					_isOpen = true;
 				}
 			}
 		}
 
 
-		private bool isOpen = false;
+		private bool _isOpen = false;
+		
+		private readonly ColorPair _nextColors = new ColorPair();
+		private readonly ColorPair _currColors = new ColorPair();
 
-		private Color? _nextForegroundColor;
-		private Color? _nextBackgroundColor;
-
-		private Color? _currForegroundColor;
-		private Color? _currBackgroundColor;
 	}
 
 }
