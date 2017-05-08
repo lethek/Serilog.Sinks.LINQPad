@@ -4,7 +4,7 @@
     <id>Serilog.Sinks.LINQPad</id>
     <version>$version$</version>
     <authors>$author$</authors>
-    <owners>$author$</owners>
+    <owners>Michael Monsour</owners>
     <description>Serilog sink that writes colored output to the LINQPad Results panel. This package is only useful, and usable from within LINQPad.</description>
     <language>en-US</language>
     <projectUrl>http://serilog.net</projectUrl>

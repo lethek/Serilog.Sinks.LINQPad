@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("Serilog.Sinks.LINQPad")]
 [assembly: AssemblyDescription("Serilog sink for LINQPad's Results panel")]
-[assembly: AssemblyCompany("Michael Monsour")]
+[assembly: AssemblyCompany("Serilog Contributors, Michael Monsour")]
 [assembly: AssemblyProduct("Serilog.Sinks.LINQPad")]
 [assembly: AssemblyCopyright("Copyright © Serilog Contributors 2015")]
 [assembly: AssemblyTrademark("")]
@@ -37,6 +37,6 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.4.2.0")]
-[assembly: AssemblyFileVersion("1.4.2.0")]
-[assembly: AssemblyInformationalVersion("1.4.2.0")]
+[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion("2.0.0.0")]
+[assembly: AssemblyInformationalVersion("2.0.0.0")]

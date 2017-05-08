@@ -14,7 +14,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Reflection;
 
 using LINQPad;
 
@@ -22,7 +24,6 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 using Serilog.Parsing;
-using System.Security;
 
 namespace Serilog.Sinks.LINQPad
 {
@@ -40,12 +41,11 @@ namespace Serilog.Sinks.LINQPad
 		/// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
 		public LINQPadSink(string outputTemplate, IFormatProvider formatProvider)
 		{
-			if (outputTemplate == null) {
-				throw new ArgumentNullException("outputTemplate");
-			}
+			if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
 			_outputTemplate = new MessageTemplateParser().Parse(outputTemplate);
 			_formatProvider = formatProvider;
 		}
+
 
 		/// <summary>
 		/// Emit the provided log event to the sink.
@@ -53,174 +53,286 @@ namespace Serilog.Sinks.LINQPad
 		/// <param name="logEvent">The log event to write.</param>
 		public void Emit(LogEvent logEvent)
 		{
-			if (logEvent == null) {
-				throw new ArgumentNullException("logEvent");
-			}
+			if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
 
 			var outputProperties = OutputProperties.GetOutputProperties(logEvent);
-			var palette = GetPalette(logEvent.Level);
-			var state = new ConsoleColorState();
-
-			using (var output = new StringWriter(_formatProvider)) {
+			using (var outputStream = new ColoredStringWriter(_formatProvider)) {
 				lock (_syncRoot) {
 					try {
 						foreach (var outputToken in _outputTemplate.Tokens) {
 							var propertyToken = outputToken as PropertyToken;
 							if (propertyToken == null) {
-								RenderOutputToken(palette, outputToken, outputProperties, output, state);
-							} else {
-								switch (propertyToken.PropertyName) {
-									case OutputProperties.MessagePropertyName:
-										RenderMessageToken(logEvent, palette, output, state);
-										break;
-									case OutputProperties.ExceptionPropertyName:
-										RenderExceptionToken(palette, propertyToken, outputProperties, output, state);
-										break;
-									default:
-										RenderOutputToken(palette, outputToken, outputProperties, output, state);
-										break;
-								}
+								RenderOutputTemplateTextToken(outputToken, outputProperties, outputStream);
+							} else switch (propertyToken.PropertyName) {
+								case OutputProperties.LevelPropertyName:
+									RenderLevelToken(logEvent.Level, outputToken, outputProperties, outputStream);
+									break;
+								case OutputProperties.MessagePropertyName:
+									RenderMessageToken(logEvent, outputStream);
+									break;
+								case OutputProperties.ExceptionPropertyName:
+									RenderExceptionToken(propertyToken, outputProperties, outputStream);
+									break;
+								default:
+									RenderOutputTemplatePropertyToken(propertyToken, outputProperties, outputStream);
+									break;
 							}
 						}
 					} finally {
-						if (state.Colors != null) {
-							CloseColors(output, state);
-						}
-						Util.RawHtml($"<span style='white-space:pre-wrap'>{output.ToString()}</span>").Dump();
+						outputStream.ResetColor();
+						Util.RawHtml($"<span style='white-space:pre-wrap'>{outputStream}</span>").Dump();
 					}
 				}
 			}
 		}
 
-		private void RenderExceptionToken(Palette palette, MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, TextWriter output, ConsoleColorState state)
+
+		private void RenderExceptionToken(PropertyToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, ColoredStringWriter outputStream)
 		{
-			using (var sw = new StringWriter()) {
-				outputToken.Render(outputProperties, sw, _formatProvider);
-				var lines = new StringReader(sw.ToString());
-				string nextLine;
-				while ((nextLine = lines.ReadLine()) != null) {
-					var newColors = nextLine.StartsWith(StackFrameLinePrefix)
-						? palette.Base
-						: palette.Highlight;
-
-					if (AreColorsDifferent(state.Colors, newColors)) {
-						if (state.Colors.HasValue) {
-							CloseColors(output, state);
-						}
-						StartColors(output, state, newColors);
-					}
-
-					output.WriteLine(SecurityElement.Escape(nextLine));
-				}
+			var sw = new StringWriter();
+			outputToken.Render(outputProperties, sw, _formatProvider);
+			var lines = new StringReader(sw.ToString());
+			string nextLine;
+			while ((nextLine = lines.ReadLine()) != null) {
+				outputStream.ForegroundColor = nextLine.StartsWith(StackFrameLinePrefix) ? Subtext : Text;
+				outputStream.WriteLine(nextLine);
 			}
 		}
 
-		private void RenderMessageToken(LogEvent logEvent, Palette palette, TextWriter output, ConsoleColorState state)
+
+		private void RenderOutputTemplatePropertyToken(PropertyToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, ColoredStringWriter outputStream)
+		{
+			outputStream.ForegroundColor = Subtext;
+
+			// This code is shared with MessageTemplateFormatter in the core Serilog
+			// project. Its purpose is to modify the way tokens are formatted to
+			// use "output template" rather than "message template" rules.
+
+			// First variation from normal rendering - if a property is missing,
+			// don't render anything (message templates render the raw token here).
+			LogEventPropertyValue propertyValue;
+			if (!outputProperties.TryGetValue(outputToken.PropertyName, out propertyValue))
+				return;
+
+			// Second variation; if the value is a scalar string, use literal
+			// rendering and support some additional formats: 'u' for uppercase
+			// and 'w' for lowercase.
+			var sv = propertyValue as ScalarValue;
+			if (sv?.Value is string) {
+				var overridden = new Dictionary<string, LogEventPropertyValue> {
+					{ outputToken.PropertyName, new LiteralStringValue((string) sv.Value) }
+				};
+
+				outputToken.Render(overridden, outputStream, _formatProvider);
+			} else {
+				outputToken.Render(outputProperties, outputStream, _formatProvider);
+			}
+		}
+
+
+		private void RenderLevelToken(LogEventLevel level, MessageTemplateToken token, IReadOnlyDictionary<string, LogEventPropertyValue> properties, ColoredStringWriter outputStream)
+		{
+			LevelFormat format;
+			if (!_levels.TryGetValue(level, out format))
+				format = _levels[LogEventLevel.Warning];
+
+			outputStream.ForegroundColor = format.Color;
+
+			if (level == LogEventLevel.Error || level == LogEventLevel.Fatal) {
+				outputStream.BackgroundColor = format.Color;
+				outputStream.ForegroundColor = Color.White;
+			}
+
+			token.Render(properties, outputStream);
+			outputStream.ResetColor();
+		}
+
+
+		private void RenderOutputTemplateTextToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, ColoredStringWriter outputStream)
+		{
+			outputStream.ForegroundColor = Punctuation;
+			outputToken.Render(outputProperties, outputStream, _formatProvider);
+		}
+
+
+		private void RenderMessageToken(LogEvent logEvent, ColoredStringWriter outputStream)
 		{
 			foreach (var messageToken in logEvent.MessageTemplate.Tokens) {
-				var newColors = (messageToken as PropertyToken) != null
-					? palette.Highlight
-					: palette.Base;
+				var messagePropertyToken = messageToken as PropertyToken;
+				if (messagePropertyToken != null) {
+					LogEventPropertyValue value;
+					if (!logEvent.Properties.TryGetValue(messagePropertyToken.PropertyName, out value)) {
+						outputStream.ForegroundColor = RawText;
+						outputStream.Write(messagePropertyToken);
+					} else {
+						var scalar = value as ScalarValue;
+						if (scalar != null) {
+							outputStream.ForegroundColor = GetScalarColor(scalar);
 
-				if (AreColorsDifferent(state.Colors, newColors)) {
-					if (state.Colors.HasValue) {
-						CloseColors(output, state);
+							if (scalar.Value is string && messagePropertyToken.Format == null && messagePropertyToken.Alignment == null) {
+								outputStream.Write(scalar.Value);
+							} else if (scalar.Value is bool && messagePropertyToken.Format == null && messagePropertyToken.Alignment == null) {
+								outputStream.Write(scalar.Value.ToString().ToLowerInvariant());
+							} else {
+								messagePropertyToken.Render(logEvent.Properties, outputStream, _formatProvider);
+							}
+						} else {
+							PrettyPrint(value, messagePropertyToken.Format, _formatProvider, outputStream);
+						}
 					}
-					StartColors(output, state, newColors);
-				}
-
-				using (var writer = new StringWriter()) {
-					messageToken.Render(logEvent.Properties, writer, _formatProvider);
-					output.Write(SecurityElement.Escape(writer.ToString()));
+				} else {
+					outputStream.ForegroundColor = Text;
+					messageToken.Render(logEvent.Properties, outputStream, _formatProvider);
 				}
 			}
 		}
 
-		private void RenderOutputToken(Palette palette, MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties, TextWriter output, ConsoleColorState state)
+
+		private void PrettyPrint(LogEventPropertyValue value, string format, IFormatProvider formatProvider, ColoredStringWriter outputStream)
 		{
-			if (AreColorsDifferent(state.Colors, palette.Base)) {
-				if (state.Colors.HasValue) {
-					CloseColors(output, state);
+			var scalar = value as ScalarValue;
+			if (scalar != null) {
+				outputStream.ForegroundColor = GetScalarColor(scalar);
+				value.Render(outputStream, format, formatProvider);
+				return;
+			}
+
+			var seq = value as SequenceValue;
+			if (seq != null) {
+				outputStream.ForegroundColor = Punctuation;
+				outputStream.Write("[");
+
+				var sep = "";
+				foreach (var element in seq.Elements) {
+					outputStream.ForegroundColor = Punctuation;
+					outputStream.Write(sep);
+					sep = ", ";
+
+					PrettyPrint(element, null, formatProvider, outputStream);
 				}
-				StartColors(output, state, palette.Base);
+
+				outputStream.ForegroundColor = Punctuation;
+				outputStream.Write("]");
+				return;
 			}
-			using (var writer = new StringWriter()) {
-				outputToken.Render(outputProperties, writer, _formatProvider);
-				output.Write(SecurityElement.Escape(writer.ToString()));
+
+			var str = value as StructureValue;
+			if (str != null) {
+				if (str.TypeTag != null) {
+					outputStream.ForegroundColor = Subtext;
+					outputStream.Write(str.TypeTag);
+					outputStream.Write(" ");
+				}
+
+				outputStream.ForegroundColor = Punctuation;
+				outputStream.Write("{");
+
+				var sep = "";
+				foreach (var prop in str.Properties) {
+					outputStream.ForegroundColor = Punctuation;
+					outputStream.Write(sep);
+					sep = ", ";
+
+					outputStream.ForegroundColor = NameSymbol;
+					outputStream.Write(prop.Name);
+
+					outputStream.ForegroundColor = Punctuation;
+					outputStream.Write("=");
+
+					PrettyPrint(prop.Value, null, formatProvider, outputStream);
+				}
+
+				outputStream.ForegroundColor = Punctuation;
+				outputStream.Write("}");
+				return;
 			}
-		}
 
-		private static Palette GetPalette(LogEventLevel level)
-		{
-			Palette palette;
-			if (!LevelPalettes.TryGetValue(level, out palette)) {
-				palette = DefaultPalette;
+			var div = value as DictionaryValue;
+			if (div != null) {
+				outputStream.ForegroundColor = Punctuation;
+				outputStream.Write("{");
+
+				var sep = "";
+				foreach (var element in div.Elements) {
+					outputStream.ForegroundColor = Punctuation;
+					outputStream.Write(sep);
+					sep = ", ";
+					outputStream.Write("[");
+					PrettyPrint(element.Key, null, formatProvider, outputStream);
+
+					outputStream.ForegroundColor = Punctuation;
+					outputStream.Write("]=");
+
+					PrettyPrint(element.Value, null, formatProvider, outputStream);
+				}
+
+				outputStream.ForegroundColor = Punctuation;
+				outputStream.Write("}");
+				return;
 			}
-			return palette;
-		}
 
-		private static bool AreColorsDifferent(ConsoleColorPair? current, ConsoleColorPair? next)
-			=> current?.Background != next?.Background || current?.Foreground != next?.Foreground;
-
-
-		private static void StartColors(TextWriter output, ConsoleColorState state, ConsoleColorPair newColors)
-		{
-			output.Write($"<span style='color:{newColors.Foreground}; background-color:{newColors.Background}'>");
-			state.Colors = newColors;
-		}
-
-		private static void CloseColors(TextWriter output, ConsoleColorState state)
-		{
-			output.Write("</span>");
-			state.Colors = null;
+			value.Render(outputStream, format, formatProvider);
 		}
 
 
-		private readonly IFormatProvider _formatProvider;
-
-		private static readonly Palette DefaultPalette = new Palette {
-			Base = new ConsoleColorPair { Background = ConsoleColor.Black, Foreground = ConsoleColor.Gray },
-			Highlight = new ConsoleColorPair { Background = ConsoleColor.DarkGray, Foreground = ConsoleColor.Gray }
-		};
-
-
-		private static readonly IDictionary<LogEventLevel, Palette> LevelPalettes = new Dictionary<LogEventLevel, Palette>
+		private Color GetScalarColor(ScalarValue scalar)
 		{
-			{ LogEventLevel.Verbose,     new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.DarkGray },
-													   Highlight = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Gray } } },
-			{ LogEventLevel.Debug,       new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Gray },
-													   Highlight = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Black } } },
-			{ LogEventLevel.Information, new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Black },
-													   Highlight = new ConsoleColorPair { Background = ConsoleColor.DarkBlue, Foreground = ConsoleColor.White } } },
-			{ LogEventLevel.Warning,     new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Yellow },
-													   Highlight = new ConsoleColorPair { Background = ConsoleColor.DarkYellow, Foreground = ConsoleColor.Black } } },
-			{ LogEventLevel.Error,       new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.White, Foreground = ConsoleColor.Red },
-													   Highlight = new ConsoleColorPair { Background = ConsoleColor.Red, Foreground = ConsoleColor.White } } },
-			{ LogEventLevel.Fatal,       new Palette { Base = new ConsoleColorPair { Background = ConsoleColor.DarkRed, Foreground = ConsoleColor.Black },
-													   Highlight = new ConsoleColorPair { Background = ConsoleColor.Red, Foreground = ConsoleColor.White } } }
-		};
+			if (scalar.Value == null || scalar.Value is bool)
+				return KeywordSymbol;
 
-		private readonly object _syncRoot = new object();
-		private readonly MessageTemplate _outputTemplate;
+			if (scalar.Value is string)
+				return StringSymbol;
+
+			if (scalar.Value.GetType().GetTypeInfo().IsPrimitive || scalar.Value is decimal)
+				return NumericSymbol;
+
+			return OtherSymbol;
+		}
+
+
+		private class LevelFormat
+		{
+			public LevelFormat(Color color)
+			{
+				Color = color;
+			}
+			public Color Color { get; }
+		}
+
 
 		private const string StackFrameLinePrefix = "   ";
 
-		private struct ConsoleColorPair
-		{
-			public ConsoleColor Foreground { get; set; }
-			public ConsoleColor Background { get; set; }
-		}
+		private readonly IFormatProvider _formatProvider;
+		private readonly MessageTemplate _outputTemplate;
+		private readonly object _syncRoot = new Object();
 
-		private class ConsoleColorState
-		{
-			public ConsoleColorPair? Colors { get; set; }
-		}
+		private readonly IDictionary<LogEventLevel, LevelFormat> _levels = new Dictionary<LogEventLevel, LevelFormat> {
+			{ LogEventLevel.Verbose, new LevelFormat(VerboseLevel) },
+			{ LogEventLevel.Debug, new LevelFormat(DebugLevel) },
+			{ LogEventLevel.Information, new LevelFormat(InformationLevel) },
+			{ LogEventLevel.Warning, new LevelFormat(WarningLevel) },
+			{ LogEventLevel.Error, new LevelFormat(ErrorLevel) },
+			{ LogEventLevel.Fatal, new LevelFormat(FatalLevel) }
+		};
 
-		private struct Palette
-		{
-			public ConsoleColorPair Base { get; set; }
-			public ConsoleColorPair Highlight { get; set; }
-		}
+		private static readonly Color
+			Text = Color.Black,
+			Subtext = Color.Gray,
+			Punctuation = Color.DarkGray,
+
+			VerboseLevel = Color.Gray,
+			DebugLevel = VerboseLevel,
+			InformationLevel = Color.Black,
+			WarningLevel = Color.Yellow,
+			ErrorLevel = Color.Red,
+			FatalLevel = ErrorLevel,
+
+			KeywordSymbol = Color.Blue,
+			NumericSymbol = Color.Magenta,
+			StringSymbol = Color.Cyan,
+			OtherSymbol = Color.Green,
+			NameSymbol = Subtext,
+			RawText = Color.Yellow;
 
 	}
 
