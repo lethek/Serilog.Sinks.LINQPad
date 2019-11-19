@@ -1,9 +1,9 @@
 Serilog.Sinks.LINQPad
 =====================
-Version 2.0
+Version 3.0
 -----------
 
-Serilog sink to publish colored output to the LINQPad Results panel. At present, a large percentage of the code has been shamelessly ripped from [LiterateConsoleSink](https://github.com/serilog/serilog-sinks-literate), with modifications to allow LINQPad to display colored results and the ability to customize the color scheme.
+Serilog sink to publish colored output to the LINQPad Results panel. At present, a large percentage of the code has been shamelessly ripped from [ConsoleSink](https://github.com/serilog/serilog-sinks-console), with modifications to allow LINQPad to display colored results and the ability to customize the color scheme.
 
 **Important:** This NuGet package is only useful (and usable) when using Serilog within LINQPad scripts.
 
@@ -23,46 +23,64 @@ Log.Logger = new LoggerConfiguration()
 Log events will be printed with color to the LINQPad results-panel.
 
 ### Custom color schemes
-By default, the LINQPad sink will use colors which look better on a white/light background than a darker one. However, if you have customized your "Style sheet for text (HTML) results" in the LINQPad Preferences window, you might find that the colours used by the sink are no longer readable. Or they might simply just not be to your taste.
+By default, the LINQPad sink will use colors which look better on a white/light background than a darker one. However, if you have customized your "Style sheet for text (HTML) results" in the LINQPad Preferences window, you might find that the colors used by the sink are no longer readable. Or they might simply just not be to your taste.
 
 If that's the case, see these examples for how to customize the colors:
 
 ```csharp
 using Serilog.Sinks.LINQPad;
+using Serilog.Sinks.LINQPad.Themes;
 
-//Create a Serilog.Sinks.LINQPad.ColorScheme instance. It may be created with default via a factory method:
-colorScheme = ColorScheme.CreateLightScheme(); //Similar to the LiterateConsoleSink's coloring, but modified for white backgrounds
-colorScheme = ColorScheme.CreateDarkScheme(); //Almost identical to the LiterateConsoleSink's coloring, better for black backgrounds
+//Create a Serilog.Sinks.LINQPad.Themes.ConsoleTheme instance. There are several pre-defined already:
+theme = DefaultThemes.LINQPadLiterate; //This is the default one. Similar to the Literate theme (default) in the ConsoleSink project, but modified for white backgrounds.
+theme = DefaultThemes.LINQPadColored; //Similar to the Colored theme in the ConsoleSink project. It's been modified to look better on dark backgrounds.
+theme = DefaultThemes.Literate; //Identical to the Literate theme (which is the default) in the ConsoleSink project.
+theme = DefaultThemes.Colored; //Identical to the Colored theme in the ConsoleSink project.
+theme = DefaultThemes.Grayscale; //Identical to the Grayscale theme in the ConsoleSink project.
 
-//Or you may directly create the object (this is equivalent to calling ColorScheme.CreateLightScheme()):
-colorScheme = new ColorScheme();
+//Create a new theme from scratch:
+theme = new LINQPadTheme(
+    new Dictionary<ConsoleThemeStyle, LINQPadThemeStyle> {
+        [ConsoleThemeStyle.Text] = new LINQPadThemeStyle { Foreground = Color.Black },
+        [ConsoleThemeStyle.SecondaryText] = new LINQPadThemeStyle { Foreground = Color.Gray },
+        [ConsoleThemeStyle.TertiaryText] = new LINQPadThemeStyle { Foreground = Color.DarkGray },
+        [ConsoleThemeStyle.Invalid] = new LINQPadThemeStyle { Background = Color.Yellow, Italic = true },
+        [ConsoleThemeStyle.Null] = new LINQPadThemeStyle { Foreground = Color.Blue },
+        [ConsoleThemeStyle.Name] = new LINQPadThemeStyle { Foreground = Color.Gray },
+        [ConsoleThemeStyle.String] = new LINQPadThemeStyle { Foreground = Color.DarkCyan, Bold = true },
+        [ConsoleThemeStyle.Number] = new LINQPadThemeStyle { Foreground = Color.Magenta, Bold = true },
+        [ConsoleThemeStyle.Boolean] = new LINQPadThemeStyle { Foreground = Color.Blue, Bold = true },
+        [ConsoleThemeStyle.Scalar] = new LINQPadThemeStyle { Foreground = Color.Green, Bold = true },
+        [ConsoleThemeStyle.LevelVerbose] = new LINQPadThemeStyle { Foreground = Color.LightGray },
+        [ConsoleThemeStyle.LevelDebug] = new LINQPadThemeStyle { Foreground = Color.Gray },
+        [ConsoleThemeStyle.LevelInformation] = new LINQPadThemeStyle { Foreground = Color.Black },
+        [ConsoleThemeStyle.LevelWarning] = new LINQPadThemeStyle { Foreground = Color.Black, Background = Color.Yellow },
+        [ConsoleThemeStyle.LevelError] = new LINQPadThemeStyle { Foreground = Color.White, Background = Color.Red },
+        [ConsoleThemeStyle.LevelFatal] = new LINQPadThemeStyle { Foreground = Color.White, Background = Color.Red, Bold = true },
+    });
 
-//The colorScheme's properties may be modified at any time, even after the Logger has been configured, in order to affect subsequent log-events.
-colorScheme.Text = new ColorPair(Color.Aqua, Color.Blue); //Text will use Aqua foreground on a Blue background
-colorScheme.Text = new ColorPair(Color.Aqua); //Text will use Aqua foreground on the panel's default background
-colorScheme.Text = new ColorPair(background: Color.Blue); //Text will use the panel's default foreground color on a Blue background
+//A theme's properties may be modified at any time, even after the Logger has been configured, in order to affect subsequent log-events.
+theme.Styles[ConsoleThemeStyle.Text] = new LINQPadThemeStyle(Color.Aqua, Color.Blue, italic:true); //Text will use an italic Aqua foreground on a Blue background
+theme.Styles[ConsoleThemeStyle.Text] = new LINQPadThemeStyle(Color.Aqua); //Text will use Aqua foreground on the panel's default background
+theme.Styles[ConsoleThemeStyle.Text] = new LINQPadThemeStyle(background: Color.Blue); //Text will use the panel's default foreground color on a Blue background
 
-colorScheme.ErrorLevel.Foreground = Color.Crimson; // The Error level token will render with Crimson foreground text
-colorScheme.ErrorLevel.Background = null; //The Error level token will render with the panel's default background color
+theme.Styles[ConsoleThemeStyle.LevelError].Foreground = Color.Crimson; // The Error level token will render with Crimson foreground text
+theme.Styles[ConsoleThemeStyle.LevelError].Background = null; //The Error level token will render with the panel's default background color
 
-//Pass an instance of ColorScheme to the sink during logger configuration.
+//Pass an instance of the theme to the sink during logger configuration.
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.LINQPad(colorScheme: colorScheme)
+    .WriteTo.LINQPad(theme: theme)
     .CreateLogger();
 ```
 
-Alternatively, if no ColorScheme is specified when the sink is configured, it will automatically use the static `LINQPadSink.DefaultColors` property which is created internally from the `ColorScheme.CreateLightScheme()` factory method. It can also be modified but could affect other instances of the sink:
+Alternatively, if no theme is specified when the sink is configured, it will automatically use the static `DefaultThemes.LINQPadLiterate` property. It can also be modified but could affect other instances of the sink:
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .WriteTo.LINQPad()
     .CreateLogger();
 
-LINQPadSink.DefaultColors.StringSymbol = new ColorPair(Color.DeepSkyBlue);
+DefaultThemes.LINQPadLiterate[ConsoleThemeStyle.String] = new LINQPadThemeStyle(Color.DeepSkyBlue);
 ```
-
-The complete list of ColorScheme properties is:
-`Text`, `Subtext`, `Punctuation`, `VerboseLevel`, `DebugLevel`, `InformationLevel`, `WarningLevel`, `ErrorLevel`, `FatalLevel`, `KeywordSymbol`, `NumericSymbol`, `StringSymbol`, `OtherSymbol`, `NameSymbol`, `RawText`.
-
 
 ### Output templates
 

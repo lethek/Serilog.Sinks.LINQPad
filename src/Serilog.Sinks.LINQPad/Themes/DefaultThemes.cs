@@ -33,7 +33,7 @@ namespace Serilog.Sinks.LINQPad.Themes
                 [ConsoleThemeStyle.Text] = new LINQPadThemeStyle { Foreground = Color.Black },
                 [ConsoleThemeStyle.SecondaryText] = new LINQPadThemeStyle { Foreground = Color.Gray },
                 [ConsoleThemeStyle.TertiaryText] = new LINQPadThemeStyle { Foreground = Color.DarkGray },
-                [ConsoleThemeStyle.Invalid] = new LINQPadThemeStyle { Background = Color.Yellow },
+                [ConsoleThemeStyle.Invalid] = new LINQPadThemeStyle { Background = Color.Yellow, Italic = true },
                 [ConsoleThemeStyle.Null] = new LINQPadThemeStyle { Foreground = Color.Blue },
                 [ConsoleThemeStyle.Name] = new LINQPadThemeStyle { Foreground = Color.Gray },
                 [ConsoleThemeStyle.String] = new LINQPadThemeStyle { Foreground = Color.DarkCyan, Bold = true },
