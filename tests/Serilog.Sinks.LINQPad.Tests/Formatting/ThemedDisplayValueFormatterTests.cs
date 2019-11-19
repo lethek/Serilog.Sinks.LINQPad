@@ -12,7 +12,7 @@ namespace Serilog.Sinks.LINQPad.Formatting
         [InlineData("Hello", "l", "Hello")]
         public void StringFormattingIsApplied(string value, string format, string expected)
         {
-            var formatter = new ThemedDisplayValueFormatter(ConsoleThemes.None, null);
+            var formatter = new ThemedDisplayValueFormatter(DefaultThemes.None, null);
             var sw = new StringWriter();
             formatter.FormatLiteralValue(new ScalarValue(value), sw, format);
             var actual = sw.ToString();

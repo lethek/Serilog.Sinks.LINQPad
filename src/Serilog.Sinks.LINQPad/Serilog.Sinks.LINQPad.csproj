@@ -2,6 +2,17 @@
 
   <PropertyGroup>
     <TargetFrameworks>net45;netcoreapp3.0</TargetFrameworks>
+    <Company>Serilog Contributors</Company>
+    <Copyright>Copyright © Serilog Contributors 2015</Copyright>
+    <Description>Serilog sink that writes colored output to the LINQPad Results panel. This package is only useful, and usable from within LINQPad.</Description>
+    <Authors>Serilog Contributors, Michael Monsour</Authors>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/lethek/Serilog.Sinks.LINQPad</PackageProjectUrl>
+    <PackageIconUrl>http://serilog.net/images/serilog-sink-nuget.png</PackageIconUrl>
+    <PackageTags>serilog linqpad logging log sink</PackageTags>
+    <RepositoryUrl>https://github.com/lethek/Serilog.Sinks.LINQPad.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>

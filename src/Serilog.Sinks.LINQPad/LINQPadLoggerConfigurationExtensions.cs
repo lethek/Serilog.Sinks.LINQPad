@@ -41,7 +41,6 @@ namespace Serilog
         /// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
         /// <param name="levelSwitch">A switch allowing the pass-through minimum level
         /// to be changed at runtime.</param>
-        /// <param name="standardErrorFromLevel">Specifies the level at which events will be written to standard error.</param>
         /// <param name="theme">The theme to apply to the styled output. If not specified,
         /// uses <see cref="LINQPadTheme.Literate"/>.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
@@ -51,16 +50,15 @@ namespace Serilog
             string outputTemplate = DefaultConsoleOutputTemplate,
             IFormatProvider formatProvider = null,
             LoggingLevelSwitch levelSwitch = null,
-            LogEventLevel? standardErrorFromLevel = null,
             ConsoleTheme theme = null)
         {
             if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
             if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
 
-            var appliedTheme = theme ?? ConsoleThemes.LiterateLight;
+            var appliedTheme = theme ?? DefaultThemes.LINQPadLiterate;
 
             var formatter = new OutputTemplateRenderer(appliedTheme, outputTemplate, formatProvider);
-            return sinkConfiguration.Sink(new LINQPadSink(appliedTheme, formatter, standardErrorFromLevel), restrictedToMinimumLevel, levelSwitch);
+            return sinkConfiguration.Sink(new LINQPadSink(appliedTheme, formatter), restrictedToMinimumLevel, levelSwitch);
         }
 
         /// <summary>
@@ -73,19 +71,17 @@ namespace Serilog
         /// events passed through the sink. Ignored when <paramref name="levelSwitch"/> is specified.</param>
         /// <param name="levelSwitch">A switch allowing the pass-through minimum level
         /// to be changed at runtime.</param>
-        /// <param name="standardErrorFromLevel">Specifies the level at which events will be written to standard error.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration LINQPad(
             this LoggerSinkConfiguration sinkConfiguration,
             ITextFormatter formatter,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-            LoggingLevelSwitch levelSwitch = null,
-            LogEventLevel? standardErrorFromLevel = null)
+            LoggingLevelSwitch levelSwitch = null)
         {
             if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
             if (formatter == null) throw new ArgumentNullException(nameof(formatter));
 
-            return sinkConfiguration.Sink(new LINQPadSink(ConsoleThemes.None, formatter, standardErrorFromLevel), restrictedToMinimumLevel, levelSwitch);
+            return sinkConfiguration.Sink(new LINQPadSink(DefaultThemes.None, formatter), restrictedToMinimumLevel, levelSwitch);
         }
     }
 }

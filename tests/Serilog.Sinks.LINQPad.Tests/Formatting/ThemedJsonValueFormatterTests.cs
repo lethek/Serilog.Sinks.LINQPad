@@ -12,7 +12,7 @@ namespace Serilog.Sinks.LINQPad.Formatting
         class TestThemedJsonValueFormatter : ThemedJsonValueFormatter
         {
             public TestThemedJsonValueFormatter()
-                : base(ConsoleThemes.None, null)
+                : base(DefaultThemes.None, null)
             {
             }
 

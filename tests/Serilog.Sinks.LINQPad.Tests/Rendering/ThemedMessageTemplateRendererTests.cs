@@ -127,8 +127,8 @@ namespace Serilog.Sinks.LINQPad.Rendering
             binder.BindMessageTemplate(messageTemplate, properties, out var mt, out var props);
             var output = new StringBuilder();
             var writer = new StringWriter(output);
-            var renderer = new ThemedMessageTemplateRenderer(ConsoleThemes.None,
-                new ThemedDisplayValueFormatter(ConsoleThemes.None, formatProvider), false);
+            var renderer = new ThemedMessageTemplateRenderer(DefaultThemes.None,
+                new ThemedDisplayValueFormatter(DefaultThemes.None, formatProvider), false);
             renderer.Render(mt, props.ToDictionary(p => p.Name, p => p.Value), writer);
             writer.Flush();
             return output.ToString();

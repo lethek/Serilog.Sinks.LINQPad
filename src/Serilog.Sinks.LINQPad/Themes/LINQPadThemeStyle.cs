@@ -20,7 +20,7 @@ namespace Serilog.Sinks.LINQPad.Themes
 {
 
     /// <summary>
-    /// Styling applied using the <see cref="System.ConsoleColor"/> enumeration.
+    /// Styling applied using the <see cref="System.Drawing.Color"/> struct.
     /// </summary>
     public struct LINQPadThemeStyle
     {

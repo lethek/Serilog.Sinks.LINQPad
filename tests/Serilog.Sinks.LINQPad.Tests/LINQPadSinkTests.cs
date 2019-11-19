@@ -14,9 +14,9 @@ namespace Serilog.Sinks.LINQPad
         [Fact]
         public void Test1()
         {
-            var theme = ConsoleThemes.LiterateDark;
+            var theme = DefaultThemes.LINQPadLiterate;
             var formatter = new OutputTemplateRenderer(theme, DefaultConsoleOutputTemplate, null);
-            var sink = new LINQPadSink(theme, formatter, LogEventLevel.Verbose);
+            var sink = new LINQPadSink(theme, formatter);
 
             var msg = new MessageTemplate("Hello World", new MessageTemplateToken[0]);
             var evt = new LogEvent(DateTimeOffset.UtcNow, LogEventLevel.Debug, null, msg, new LogEventProperty[0]);

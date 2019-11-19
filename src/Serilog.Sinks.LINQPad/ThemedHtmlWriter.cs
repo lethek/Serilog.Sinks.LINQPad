@@ -10,7 +10,7 @@ using Serilog.Sinks.LINQPad.Themes;
 namespace Serilog.Sinks.LINQPad
 {
 
-    public class ThemedHtmlWriter : TextWriter
+    internal class ThemedHtmlWriter : TextWriter
     {
         public ThemedHtmlWriter(ConsoleTheme theme)
             : this(theme, new StringBuilder(), CultureInfo.CurrentCulture) { }
@@ -49,12 +49,6 @@ namespace Serilog.Sinks.LINQPad
         {
             _theme.ApplyColors(_writer);
             _writer.Write(WebUtility.HtmlEncode(value));
-            //if (value.AsQueryable().All(Char.IsWhiteSpace)) {
-            //    _writer.Write(value);
-            //} else {
-            //    _theme.ApplyColors(_writer);
-            //    _writer.Write(WebUtility.HtmlEncode(value));
-            //}
         }
 
 

@@ -19,7 +19,7 @@ using System.Drawing;
 
 namespace Serilog.Sinks.LINQPad.Themes
 {
-    public static class ConsoleThemes
+    public static class DefaultThemes
     {
         /// <summary>
         /// No styling applied.
@@ -27,12 +27,12 @@ namespace Serilog.Sinks.LINQPad.Themes
         public static ConsoleTheme None { get; } = new EmptyConsoleTheme();
 
         
-        public static LINQPadTheme LiterateLight { get; } = new LINQPadTheme(
+        public static LINQPadTheme LINQPadLiterate { get; } = new LINQPadTheme(
             new Dictionary<ConsoleThemeStyle, LINQPadThemeStyle>
             {
                 [ConsoleThemeStyle.Text] = new LINQPadThemeStyle { Foreground = Color.Black },
                 [ConsoleThemeStyle.SecondaryText] = new LINQPadThemeStyle { Foreground = Color.Gray },
-                [ConsoleThemeStyle.TertiaryText] = new LINQPadThemeStyle { Foreground = Color.DarkGray, Background = Color.Magenta },
+                [ConsoleThemeStyle.TertiaryText] = new LINQPadThemeStyle { Foreground = Color.DarkGray },
                 [ConsoleThemeStyle.Invalid] = new LINQPadThemeStyle { Background = Color.Yellow },
                 [ConsoleThemeStyle.Null] = new LINQPadThemeStyle { Foreground = Color.Blue },
                 [ConsoleThemeStyle.Name] = new LINQPadThemeStyle { Foreground = Color.Gray },
@@ -49,7 +49,7 @@ namespace Serilog.Sinks.LINQPad.Themes
             });
 
 
-        public static LINQPadTheme ColoredLight { get; } = new LINQPadTheme(
+        public static LINQPadTheme LINQPadColored { get; } = new LINQPadTheme(
             new Dictionary<ConsoleThemeStyle, LINQPadThemeStyle>
             {
                 [ConsoleThemeStyle.Text] = new LINQPadThemeStyle { Foreground = Color.Gray },
@@ -71,7 +71,7 @@ namespace Serilog.Sinks.LINQPad.Themes
             });
 
 
-        public static LINQPadTheme LiterateDark { get; } = new LINQPadTheme(
+        public static LINQPadTheme Literate { get; } = new LINQPadTheme(
             new Dictionary<ConsoleThemeStyle, LINQPadThemeStyle>
             {
                 [ConsoleThemeStyle.Text] = new LINQPadThemeStyle { Foreground = Color.White },

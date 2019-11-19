@@ -19,7 +19,7 @@ namespace Serilog.Sinks.LINQPad.Output
         public void UsesFormatProvider()
         {
             var french = new CultureInfo("fr-FR");
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Message}", french);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Message}", french);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("{0}", 12.345));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -30,7 +30,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void MessageTemplatesContainingFormatStringPropertiesRenderCorrectly()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Message}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Message}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("{Message}", "Hello, world!"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -41,7 +41,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void UppercaseFormatSpecifierIsSupportedForStrings()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Name:u}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Name:u}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("{Name}", "Nick"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -52,7 +52,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void LowercaseFormatSpecifierIsSupportedForStrings()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Name:w}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Name:w}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("{Name}", "Nick"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -111,7 +111,7 @@ namespace Serilog.Sinks.LINQPad.Output
             int width,
             string expected)
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, $"{{Level:t{width}}}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, $"{{Level:t{width}}}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.Write(level, "Hello"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -122,7 +122,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void FixedLengthLevelSupportsUpperCasing()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Level:u3}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Level:u3}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("Hello"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -133,7 +133,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void FixedLengthLevelSupportsLowerCasing()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Level:w3}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Level:w3}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("Hello"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -144,7 +144,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void DefaultLevelLengthIsFullText()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Level}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Level}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("Hello"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -155,7 +155,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void AligmentAndWidthCanBeCombined()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Level,5:w3}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Level,5:w3}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("Hello"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -202,7 +202,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void AppliesCustomFormatterToEnums()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Message}", new SizeFormatter(CultureInfo.InvariantCulture));
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Message}", new SizeFormatter(CultureInfo.InvariantCulture));
             var evt = DelegatingSink.GetLogEvent(l => l.Information("Size {Size}", Size.Large));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -213,7 +213,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void NonMessagePropertiesAreRendered()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Properties}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Properties}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.ForContext("Foo", 42).Information("Hello from {Bar}!", "bar"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -224,7 +224,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void NonMessagePositionalPropertiesAreRendered()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Properties}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Properties}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.ForContext("Foo", 42).Information("Hello from {0}!", "bar"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -235,7 +235,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void DoNotDuplicatePropertiesAlreadyRenderedInOutputTemplate()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Foo} {Properties}", CultureInfo.InvariantCulture);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Foo} {Properties}", CultureInfo.InvariantCulture);
             var evt = DelegatingSink.GetLogEvent(l => l.ForContext("Foo", 42).ForContext("Bar", 42).Information("Hello from bar!"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -251,7 +251,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [InlineData(":jl", "Hello, World!")]
         public void AppliesLiteralFormattingToMessageStringsWhenSpecified(string format, string expected)
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Message" + format + "}", null);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Message" + format + "}", null);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("Hello, {Name}!", "World"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -266,7 +266,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [InlineData(":jl", "{\"Name\": \"World\"}")]
         public void AppliesJsonFormattingToMessageStructuresWhenSpecified(string format, string expected)
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Message" + format + "}", null);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Message" + format + "}", null);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("{@Obj}", new { Name = "World" }));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -281,7 +281,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [InlineData(":jl", "{\"Name\": \"World\"}")]
         public void AppliesJsonFormattingToPropertiesTokenWhenSpecified(string format, string expected)
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Properties" + format + "}", null);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Properties" + format + "}", null);
             var evt = DelegatingSink.GetLogEvent(l => l.ForContext("Name", "World").Information("Hello"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -292,7 +292,7 @@ namespace Serilog.Sinks.LINQPad.Output
         [Fact]
         public void AnEmptyPropertiesTokenIsAnEmptyStructureValue()
         {
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Properties}", null);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Properties}", null);
             var evt = DelegatingSink.GetLogEvent(l => l.Information("Hello"));
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -328,7 +328,7 @@ namespace Serilog.Sinks.LINQPad.Output
                 ? number.ToString(frenchFormatProvider)
                 : number.ToString(defaultFormatProvider);
 
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Message" + format + "}", frenchFormatProvider);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Message" + format + "}", frenchFormatProvider);
             var evt = DelegatingSink.GetLogEvent(l => { l.Information("{MyDate}{MyNumber}", date, number); });
             var sw = new StringWriter();
             formatter.Format(evt, sw);
@@ -359,7 +359,7 @@ namespace Serilog.Sinks.LINQPad.Output
                 ? number.ToString(frenchFormatProvider)
                 : number.ToString(defaultFormatProvider);
 
-            var formatter = new OutputTemplateRenderer(ConsoleThemes.None, "{Message" + format + "}", frenchFormatProvider);
+            var formatter = new OutputTemplateRenderer(DefaultThemes.None, "{Message" + format + "}", frenchFormatProvider);
             var evt = DelegatingSink.GetLogEvent(
                 l => {
                     l.Information(

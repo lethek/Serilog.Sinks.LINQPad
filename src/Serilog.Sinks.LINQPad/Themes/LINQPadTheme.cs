@@ -59,6 +59,7 @@ namespace Serilog.Sinks.LINQPad.Themes
         /// <inheritdoc/>
         public override void Reset(TextWriter output)
         {
+            //"Reset".Dump();
             NextColors = LINQPadThemeStyle.None;
         }
 
@@ -66,9 +67,9 @@ namespace Serilog.Sinks.LINQPad.Themes
         public override void ApplyColors(TextWriter output)
         {
             if (!CurrColors.Equals(NextColors)) {
-                if (InSpan) {
+                if (SpanDepth > 0) {
                     output.Write("</span>");
-                    InSpan = false;
+                    SpanDepth--;
                 }
 
                 var declarations = new[] {
@@ -81,7 +82,7 @@ namespace Serilog.Sinks.LINQPad.Themes
                 if (style.Length > 0) {
                     output.Write($"<span style='{style}'>");
                     CurrColors = NextColors;
-                    InSpan = true;
+                    SpanDepth++;
                 }
             }
         }
@@ -89,7 +90,7 @@ namespace Serilog.Sinks.LINQPad.Themes
 
         protected LINQPadThemeStyle CurrColors;
         protected LINQPadThemeStyle NextColors;
-        protected bool InSpan;
+        protected int SpanDepth = 0;
     }
 
 }

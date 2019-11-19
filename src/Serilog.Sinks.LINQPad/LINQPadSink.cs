@@ -16,44 +16,44 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
 using Serilog.Sinks.LINQPad.Themes;
+
 using System;
-using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 using LINQPad;
 
+
 namespace Serilog.Sinks.LINQPad
 {
-    class LINQPadSink : ILogEventSink
+
+    internal class LINQPadSink : ILogEventSink
     {
-        readonly LogEventLevel? _standardErrorFromLevel;
-        readonly ConsoleTheme _theme;
-        readonly ITextFormatter _formatter;
-        static readonly object _syncRoot = new object();
-
-        const int DefaultWriteBufferCapacity = 256;
-
-        public LINQPadSink(
-            ConsoleTheme theme,
-            ITextFormatter formatter,
-            LogEventLevel? standardErrorFromLevel)
+        public LINQPadSink(ConsoleTheme theme, ITextFormatter formatter)
         {
-            _standardErrorFromLevel = standardErrorFromLevel;
             _theme = theme ?? throw new ArgumentNullException(nameof(theme));
             _formatter = formatter;
         }
 
+
         public void Emit(LogEvent logEvent)
         {
             using (var buffer = new ThemedHtmlWriter(_theme, new StringBuilder(DefaultWriteBufferCapacity))) {
-                _theme.Reset(buffer);
-                _formatter.Format(logEvent, buffer);
-                //_theme.Dump();
-                lock (_syncRoot) {
-                    Util.RawHtml($"<span style='white-space:pre-wrap'>{buffer}</span>").Dump($"<span style='white-space:pre-wrap'>{buffer}</span>");
+                lock (SyncRoot) {
+                    _formatter.Format(logEvent, buffer);
+                    Util.RawHtml($"<span style='white-space:pre-wrap'>{buffer}</span>").Dump();
                 }
             }
         }
+
+
+        private readonly ConsoleTheme _theme;
+        private readonly ITextFormatter _formatter;
+
+
+        private const int DefaultWriteBufferCapacity = 256;
+
+
+        private static readonly object SyncRoot = new object();
     }
+
 }
