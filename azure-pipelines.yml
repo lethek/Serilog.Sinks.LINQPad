@@ -7,7 +7,7 @@ trigger:
     - '*'
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
 steps:
 - task: GitVersion@5
@@ -15,36 +15,35 @@ steps:
     runtime: 'core'
     updateAssemblyInfo: true
 
-- script: dotnet restore
-  displayName: Restore
-
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    command: build
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
-
 - task: DotNetCoreCLI@2
   displayName: Test
   inputs:
     command: test
     projects: '**/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
+    arguments: '--configuration $(BuildConfiguration) --collect "Code coverage"'
+    publishTestResults: true
 
 - task: DotNetCoreCLI@2
   displayName: Pack
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj;-:**/*Tests/*.csproj'
-    nobuild: true    
     versioningScheme: 'byEnvVar'
-    versionEnvVar: 'GITVERSION_NUGETVERSION'
+    versionEnvVar: 'GitVersion.NuGetVersion'
 
-- task: DotNetCoreCLI@2
-  displayName: Push
+
+- task: CopyFiles@2
+  displayName: Copy packages
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   inputs:
-    command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    nuGetFeedType: 'internal'
-    publishVstsFeed: '/640f77ba-a1d6-45f8-a237-2fff94af3f1d'
+    Contents: '**/*.nupkg'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    flattenFolders: true
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish artifacts
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
