@@ -1,49 +1,68 @@
 trigger:
+  batch: true
   branches:
     include:
+    - main
     - master
   tags:
     include:
-    - '*'
+    - v*
 
 pool:
   vmImage: 'windows-latest'
 
 steps:
-- task: GitVersion@5
+- task: gitversion/setup@0
+  displayName: Setup GitVersion
   inputs:
-    runtime: 'core'
-    updateAssemblyInfo: true
+    versionSpec: '5.x'
+
+- task: gitversion/execute@0
+  displayName: Execute GitVersion
+  inputs:
+    additionalArguments: '/output BuildServer'
+
+- task: UseDotNet@2
+  displayName: 'Use .NET 6 SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '6.x'
+
+- task: NuGetAuthenticate@0
+
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: 'restore'
+    feedsToUse: 'select'
+    vstsFeed: '640f77ba-a1d6-45f8-a237-2fff94af3f1d'
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: 'build'
+    arguments: '--configuration $(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: Test
   inputs:
-    command: test
-    projects: '**/*Tests/*.csproj'
-    arguments: '--configuration $(BuildConfiguration) --collect "Code coverage"'
-    publishTestResults: true
+    command: 'test'
+    arguments: '--configuration $(buildConfiguration) --collect "Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    nobuild: true
 
 - task: DotNetCoreCLI@2
   displayName: Pack
   inputs:
     command: 'pack'
-    packagesToPack: '**/*.csproj;-:**/*Tests/*.csproj'
+    packagesToPack: '**/*.csproj;!**/*Tests/*.csproj'
+    nobuild: true
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'GitVersion.NuGetVersion'
 
-
-- task: CopyFiles@2
-  displayName: Copy packages
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+- task: DotNetCoreCLI@2
+  displayName: Push
   inputs:
-    Contents: '**/*.nupkg'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    flattenFolders: true
-
-- task: PublishBuildArtifacts@1
-  displayName: Publish artifacts
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: '640f77ba-a1d6-45f8-a237-2fff94af3f1d'
