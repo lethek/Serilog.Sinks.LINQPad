@@ -21,6 +21,8 @@ using Serilog.Sinks.LINQPad.Output;
 using Serilog.Sinks.LINQPad.Themes;
 using System;
 
+using LINQPad;
+
 namespace Serilog
 {
     /// <summary>
@@ -55,7 +57,7 @@ namespace Serilog
             if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
             if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
 
-            var appliedTheme = theme ?? DefaultThemes.LINQPadLiterate;
+            var appliedTheme = theme ?? (Util.IsDarkThemeEnabled ? DefaultThemes.LINQPadDark : DefaultThemes.LINQPadLiterate);
 
             var formatter = new OutputTemplateRenderer(appliedTheme, outputTemplate, formatProvider);
             return sinkConfiguration.Sink(new LINQPadSink(appliedTheme, formatter), restrictedToMinimumLevel, levelSwitch);
