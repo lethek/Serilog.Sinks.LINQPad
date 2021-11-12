@@ -35,7 +35,6 @@ steps:
   inputs:
     command: 'restore'
     feedsToUse: 'select'
-    vstsFeed: '640f77ba-a1d6-45f8-a237-2fff94af3f1d'
 
 - task: DotNetCoreCLI@2
   displayName: Build
@@ -65,4 +64,4 @@ steps:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     nuGetFeedType: 'internal'
-    publishVstsFeed: '640f77ba-a1d6-45f8-a237-2fff94af3f1d'
+    publishVstsFeed: '6d64a465-595c-4cc4-9f4f-a69e4b8b0548'
