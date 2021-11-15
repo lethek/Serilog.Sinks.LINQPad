@@ -29,8 +29,6 @@ steps:
     version: '6.x'
 
 - task: NuGetAuthenticate@0
-  inputs:
-    nuGetServiceConnections: 'NuGet'
 
 - task: DotNetCoreCLI@2
   displayName: Restore
@@ -66,5 +64,6 @@ steps:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     nuGetFeedType: 'external'
+    publishFeedCredentials: 'NuGet'
     versioningScheme: byEnvVar
     versionEnvVar: 'GitVersion.NuGetVersion'
