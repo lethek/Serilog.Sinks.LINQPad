@@ -61,9 +61,9 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Push
   inputs:
-    command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    nuGetFeedType: 'external'
-    publishFeedCredentials: 'NuGet'
-    versioningScheme: byEnvVar
-    versionEnvVar: 'GitVersion.NuGetVersion'
+    command: custom
+    custom: nuget
+    arguments: >
+      push $(Build.ArtifactStagingDirectory)/*.nupkg
+      -s https://api.nuget.org/v3/index.json
+      -k $(NuGetApiKey) 
