@@ -30,9 +30,11 @@ Global
 		{3103A370-BF53-4092-AD97-4198F2635F61}.Debug|x86.ActiveCfg = Debug|x86
 		{3103A370-BF53-4092-AD97-4198F2635F61}.Debug|x86.Build.0 = Debug|x86
 		{3103A370-BF53-4092-AD97-4198F2635F61}.Release|x86.ActiveCfg = Release|x86
+		{3103A370-BF53-4092-AD97-4198F2635F61}.Release|x86.Build.0 = Release|x86
 		{051C6CA6-0237-4431-8D2A-4AF402CA909A}.Debug|x86.ActiveCfg = Debug|x86
 		{051C6CA6-0237-4431-8D2A-4AF402CA909A}.Debug|x86.Build.0 = Debug|x86
 		{051C6CA6-0237-4431-8D2A-4AF402CA909A}.Release|x86.ActiveCfg = Release|x86
+		{051C6CA6-0237-4431-8D2A-4AF402CA909A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

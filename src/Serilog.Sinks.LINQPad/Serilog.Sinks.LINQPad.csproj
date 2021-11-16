@@ -8,12 +8,13 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<PackageProjectUrl>https://github.com/lethek/Serilog.Sinks.LINQPad</PackageProjectUrl>
-		<PackageIconUrl>http://serilog.net/images/serilog-sink-nuget.png</PackageIconUrl>
-		<PackageTags>serilog linqpad logging log sink</PackageTags>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageTags>serilog;linqpad;logging;log;sink</PackageTags>
 		<RepositoryUrl>https://github.com/lethek/Serilog.Sinks.LINQPad.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<CheckEolTargetFramework>false</CheckEolTargetFramework>
 		<Platforms>x86</Platforms>
+		<OutputPath>bin\$(Configuration)</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -37,5 +38,9 @@
 	<ItemGroup>
 		<PackageReference Include="Serilog" Version="2.10.0" />
 		<PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\assets\icon.png" Pack="true" Visible="false" PackagePath="" />
 	</ItemGroup>
 </Project>
