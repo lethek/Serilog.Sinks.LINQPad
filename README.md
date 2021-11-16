@@ -1,6 +1,6 @@
 Serilog.Sinks.LINQPad
 =====================
-Version 3.0
+Version 3.1
 -----------
 
 Serilog sink to publish colored output to the LINQPad Results panel. At present, a large percentage of the code has been shamelessly ripped from [ConsoleSink](https://github.com/serilog/serilog-sinks-console), with modifications to allow LINQPad to display colored results and the ability to customize the color scheme.
@@ -31,14 +31,15 @@ If that's the case, see these examples for how to customize the colors:
 using Serilog.Sinks.LINQPad;
 using Serilog.Sinks.LINQPad.Themes;
 
-//Create a Serilog.Sinks.LINQPad.Themes.ConsoleTheme instance. There are several pre-defined already:
-theme = DefaultThemes.LINQPadLiterate; //This is the default one. Similar to the Literate theme (default) in the ConsoleSink project, but modified for white backgrounds.
-theme = DefaultThemes.LINQPadColored; //Similar to the Colored theme in the ConsoleSink project. It's been modified to look better on dark backgrounds.
-theme = DefaultThemes.Literate; //Identical to the Literate theme (which is the default) in the ConsoleSink project.
-theme = DefaultThemes.Colored; //Identical to the Colored theme in the ConsoleSink project.
-theme = DefaultThemes.Grayscale; //Identical to the Grayscale theme in the ConsoleSink project.
+//Either get a pre-defined Serilog.Sinks.LINQPad.Themes.ConsoleTheme instance, there are several static defaults here:
+theme = DefaultThemes.LINQPadLiterate; //This is the default normally. Based on the Literate theme from the ConsoleSink project, but modified for white backgrounds.
+theme = DefaultThemes.LINQPadDark; //This is the default for dark-mode.
+theme = DefaultThemes.LINQPadColored; //Similar to the Colored theme in the ConsoleSink project. It's been modified to look better on white backgrounds.
+theme = DefaultThemes.Literate; //Identical to the Literate theme (which is the default) in the ConsoleSink project. Designed for black console backgrounds.
+theme = DefaultThemes.Colored; //Identical to the Colored theme in the ConsoleSink project. Designed for black console backgrounds.
+theme = DefaultThemes.Grayscale; //Identical to the Grayscale theme in the ConsoleSink project. Designed for black console backgrounds.
 
-//Create a new theme from scratch:
+//Or create a new theme from scratch:
 theme = new LINQPadTheme(
     new Dictionary<ConsoleThemeStyle, LINQPadThemeStyle> {
         [ConsoleThemeStyle.Text] = new LINQPadThemeStyle { Foreground = Color.Black },
@@ -73,12 +74,15 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 ```
 
-Alternatively, if no theme is specified when the sink is configured, it will automatically use the static `DefaultThemes.LINQPadLiterate` property. It can also be modified but could affect other instances of the sink:
+Alternatively, if no theme is specified when the sink is configured, it will automatically choose one of the defaults: either the static `DefaultThemes.LINQPadLiterate` when LINQPad is using its Windows Default theme or `DefaultThemes.LINQPadDark` when LINQPad is using its Dark theme.
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .WriteTo.LINQPad()
     .CreateLogger();
+```
 
+Note: the static default themes can be modified but could affect other instances of the sink:
+```
 DefaultThemes.LINQPadLiterate[ConsoleThemeStyle.String] = new LINQPadThemeStyle(Color.DeepSkyBlue);
 ```
 
