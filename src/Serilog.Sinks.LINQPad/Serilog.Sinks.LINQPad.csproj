@@ -13,8 +13,8 @@
 		<RepositoryUrl>https://github.com/lethek/Serilog.Sinks.LINQPad.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<CheckEolTargetFramework>false</CheckEolTargetFramework>
-		<Platforms>x86</Platforms>
 		<OutputPath>bin\$(Configuration)</OutputPath>
+		<ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
 	</PropertyGroup>
 
 	<ItemGroup>
