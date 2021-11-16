@@ -65,7 +65,7 @@ namespace Serilog.Sinks.LINQPad.Themes
         Number,
 
         /// <summary>
-        /// <see cref="bool"/> values.
+        /// <see cref="System.Boolean"/> values.
         /// </summary>
         Boolean,
 

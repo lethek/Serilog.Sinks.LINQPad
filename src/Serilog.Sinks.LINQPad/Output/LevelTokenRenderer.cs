@@ -14,6 +14,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+
 using Serilog.Events;
 using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Rendering;
@@ -21,12 +22,11 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-    class LevelTokenRenderer : OutputTemplateTokenRenderer
+    internal class LevelTokenRenderer : OutputTemplateTokenRenderer
     {
-        readonly ConsoleTheme _theme;
-        readonly PropertyToken _levelToken;
-
-        static readonly Dictionary<LogEventLevel, ConsoleThemeStyle> Levels = new Dictionary<LogEventLevel, ConsoleThemeStyle>
+        private readonly ConsoleTheme _theme;
+        private readonly PropertyToken _levelToken;
+        private static readonly Dictionary<LogEventLevel, ConsoleThemeStyle> Levels = new Dictionary<LogEventLevel, ConsoleThemeStyle>
         {
             { LogEventLevel.Verbose, ConsoleThemeStyle.LevelVerbose },
             { LogEventLevel.Debug, ConsoleThemeStyle.LevelDebug },
@@ -49,12 +49,14 @@ namespace Serilog.Sinks.LINQPad.Output
         public override void Render(LogEvent logEvent, TextWriter output)
         {
             var moniker = LevelOutputFormat.GetLevelMoniker(logEvent.Level, _levelToken.Format);
-            if (!Levels.TryGetValue(logEvent.Level, out var levelStyle))
+            if (!Levels.TryGetValue(logEvent.Level, out var levelStyle)) {
                 levelStyle = ConsoleThemeStyle.Invalid;
+            }
 
             var _ = 0;
-            using (_theme.Apply(output, levelStyle, ref _))
+            using (_theme.Apply(output, levelStyle, ref _)) {
                 Padding.Apply(output, moniker, _levelToken.Alignment);
+            }
         }
     }
 }

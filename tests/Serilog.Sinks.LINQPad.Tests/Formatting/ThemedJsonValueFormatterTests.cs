@@ -9,7 +9,7 @@ namespace Serilog.Sinks.LINQPad.Formatting
 {
     public class ThemedJsonValueFormatterTests
     {
-        class TestThemedJsonValueFormatter : ThemedJsonValueFormatter
+        private class TestThemedJsonValueFormatter : ThemedJsonValueFormatter
         {
             public TestThemedJsonValueFormatter()
                 : base(DefaultThemes.None, null)
@@ -55,9 +55,9 @@ namespace Serilog.Sinks.LINQPad.Formatting
         [Fact]
         public void DoubleSpecialsFormatAsString()
         {
-            JsonLiteralTypesAreFormatted(double.NaN, "\"NaN\"");
-            JsonLiteralTypesAreFormatted(double.PositiveInfinity, "\"Infinity\"");
-            JsonLiteralTypesAreFormatted(double.NegativeInfinity, "\"-Infinity\"");
+            JsonLiteralTypesAreFormatted(Double.NaN, "\"NaN\"");
+            JsonLiteralTypesAreFormatted(Double.PositiveInfinity, "\"Infinity\"");
+            JsonLiteralTypesAreFormatted(Double.NegativeInfinity, "\"-Infinity\"");
         }
 
         [Fact]
@@ -69,9 +69,9 @@ namespace Serilog.Sinks.LINQPad.Formatting
         [Fact]
         public void FloatSpecialsFormatAsString()
         {
-            JsonLiteralTypesAreFormatted(float.NaN, "\"NaN\"");
-            JsonLiteralTypesAreFormatted(float.PositiveInfinity, "\"Infinity\"");
-            JsonLiteralTypesAreFormatted(float.NegativeInfinity, "\"-Infinity\"");
+            JsonLiteralTypesAreFormatted(Single.NaN, "\"NaN\"");
+            JsonLiteralTypesAreFormatted(Single.PositiveInfinity, "\"Infinity\"");
+            JsonLiteralTypesAreFormatted(Single.NegativeInfinity, "\"-Infinity\"");
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace Serilog.Sinks.LINQPad.Formatting
             JsonLiteralTypesAreFormatted(123.45m, "123.45");
         }
 
-        static string Format(LogEventPropertyValue value)
+        private static string Format(LogEventPropertyValue value)
         {
             var formatter = new TestThemedJsonValueFormatter();
             var output = new StringWriter();

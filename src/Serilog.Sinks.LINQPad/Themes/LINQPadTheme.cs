@@ -30,7 +30,10 @@ namespace Serilog.Sinks.LINQPad.Themes
         /// <param name="styles">Styles to apply within the theme.</param>
         public LINQPadTheme(IReadOnlyDictionary<ConsoleThemeStyle, LINQPadThemeStyle> styles)
         {
-            if (styles == null) throw new ArgumentNullException(nameof(styles));
+            if (styles == null) {
+                throw new ArgumentNullException(nameof(styles));
+            }
+
             Styles = styles.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
@@ -58,10 +61,7 @@ namespace Serilog.Sinks.LINQPad.Themes
 
         /// <inheritdoc/>
         public override void Reset(TextWriter output)
-        {
-            //"Reset".Dump();
-            NextColors = LINQPadThemeStyle.None;
-        }
+            => NextColors = LINQPadThemeStyle.None;
 
 
         public override void ApplyColors(TextWriter output)

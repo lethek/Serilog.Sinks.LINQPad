@@ -13,39 +13,40 @@
 // limitations under the License.
 
 using System.IO;
+
 using Serilog.Events;
 using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-    class ExceptionTokenRenderer : OutputTemplateTokenRenderer
+    internal class ExceptionTokenRenderer : OutputTemplateTokenRenderer
     {
-        const string StackFrameLinePrefix = "   ";
-
-        readonly ConsoleTheme _theme;
-
         public ExceptionTokenRenderer(ConsoleTheme theme, PropertyToken pt)
-        {
-            _theme = theme;
-        }
+            => _theme = theme;
+
 
         public override void Render(LogEvent logEvent, TextWriter output)
         {
             // Padding is never applied by this renderer.
 
-            if (logEvent.Exception == null)
+            if (logEvent.Exception == null) {
                 return;
+            }
 
             var lines = new StringReader(logEvent.Exception.ToString());
             string nextLine;
-            while ((nextLine = lines.ReadLine()) != null)
-            {
+            while ((nextLine = lines.ReadLine()) != null) {
                 var style = nextLine.StartsWith(StackFrameLinePrefix) ? ConsoleThemeStyle.SecondaryText : ConsoleThemeStyle.Text;
                 var _ = 0;
-                using (_theme.Apply(output, style, ref _))
+                using (_theme.Apply(output, style, ref _)) {
                     output.WriteLine(nextLine);
+                }
             }
         }
+
+
+        private const string StackFrameLinePrefix = "   ";
+        private readonly ConsoleTheme _theme;
     }
 }

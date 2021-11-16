@@ -6,10 +6,9 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad
 {
-
-    class TracingConsoleTheme : ConsoleTheme
+    internal class TracingConsoleTheme : ConsoleTheme
     {
-        const string End = "</>";
+        private const string End = "</>";
 
         public override bool CanBuffer => true;
 

@@ -13,14 +13,13 @@
 // limitations under the License.
 
 using System.IO;
+
 using Serilog.Parsing;
 
 namespace Serilog.Sinks.LINQPad.Rendering
 {
-    static class Padding
+    internal static class Padding
     {
-        static readonly char[] PaddingChars = new string(' ', 80).ToCharArray();
-
         /// <summary>
         /// Writes the provided value to the output, applying direction-based padding when <paramref name="alignment"/> is provided.
         /// </summary>
@@ -29,28 +28,29 @@ namespace Serilog.Sinks.LINQPad.Rendering
         /// <param name="alignment">The alignment settings to apply when rendering <paramref name="value"/>.</param>
         public static void Apply(TextWriter output, string value, Alignment? alignment)
         {
-            if (alignment == null || value.Length >= alignment.Value.Width)
-            {
+            if (alignment == null || value.Length >= alignment.Value.Width) {
                 output.Write(value);
                 return;
             }
 
             var pad = alignment.Value.Width - value.Length;
 
-            if (alignment.Value.Direction == AlignmentDirection.Left)
+            if (alignment.Value.Direction == AlignmentDirection.Left) {
                 output.Write(value);
-
-            if (pad <= PaddingChars.Length)
-            {
-                output.Write(PaddingChars, 0, pad);
             }
-            else
-            {
+
+            if (pad <= PaddingChars.Length) {
+                output.Write(PaddingChars, 0, pad);
+            } else {
                 output.Write(new string(' ', pad));
             }
 
-            if (alignment.Value.Direction == AlignmentDirection.Right)
+            if (alignment.Value.Direction == AlignmentDirection.Right) {
                 output.Write(value);
+            }
         }
+
+
+        private static readonly char[] PaddingChars = new string(' ', 80).ToCharArray();
     }
 }

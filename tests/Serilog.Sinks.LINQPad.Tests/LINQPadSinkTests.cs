@@ -23,6 +23,6 @@ namespace Serilog.Sinks.LINQPad
             sink.Emit(evt);
         }
 
-        const string DefaultConsoleOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
+        private const string DefaultConsoleOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
     }
 }

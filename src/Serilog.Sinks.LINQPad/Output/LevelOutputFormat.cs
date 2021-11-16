@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+
 using Serilog.Events;
 using Serilog.Sinks.LINQPad.Rendering;
 
@@ -24,10 +26,49 @@ namespace Serilog.Sinks.LINQPad.Output
     /// Width is set through formats like "u3" (uppercase three chars),
     /// "w1" (one lowercase char), or "t4" (title case four chars).
     /// </summary>
-    static class LevelOutputFormat
+    internal static class LevelOutputFormat
     {
-        static readonly string[][] TitleCaseLevelMap =
+        public static string GetLevelMoniker(LogEventLevel value, string format = null)
         {
+            if (format == null || format.Length != 2 && format.Length != 3) {
+                return Casing.Format(value.ToString(), format);
+            }
+
+            // Using int.Parse() here requires allocating a string to exclude the first character prefix.
+            // Junk like "wxy" will be accepted but produce benign results.
+            var width = format[1] - '0';
+            if (format.Length == 3) {
+                width *= 10;
+                width += format[2] - '0';
+            }
+
+            if (width < 1) {
+                return String.Empty;
+            }
+
+            if (width > 4) {
+                var stringValue = value.ToString();
+                if (stringValue.Length > width) {
+                    stringValue = stringValue.Substring(0, width);
+                }
+
+                return Casing.Format(stringValue);
+            }
+
+            var index = (int)value;
+            if (index >= 0 && index <= (int)LogEventLevel.Fatal) {
+                switch (format[0]) {
+                    case 'w': return LowercaseLevelMap[index][width - 1];
+                    case 'u': return UppercaseLevelMap[index][width - 1];
+                    case 't': return TitleCaseLevelMap[index][width - 1];
+                }
+            }
+
+            return Casing.Format(value.ToString(), format);
+        }
+
+
+        private static readonly string[][] TitleCaseLevelMap = {
             new[] { "V", "Vb", "Vrb", "Verb" },
             new[] { "D", "De", "Dbg", "Dbug" },
             new[] { "I", "In", "Inf", "Info" },
@@ -36,8 +77,8 @@ namespace Serilog.Sinks.LINQPad.Output
             new[] { "F", "Fa", "Ftl", "Fatl" },
         };
 
-        static readonly string[][] LowercaseLevelMap =
-        {
+
+        private static readonly string[][] LowercaseLevelMap = {
             new[] { "v", "vb", "vrb", "verb" },
             new[] { "d", "de", "dbg", "dbug" },
             new[] { "i", "in", "inf", "info" },
@@ -46,8 +87,8 @@ namespace Serilog.Sinks.LINQPad.Output
             new[] { "f", "fa", "ftl", "fatl" },
         };
 
-        static readonly string[][] UppercaseLevelMap =
-        {
+
+        private static readonly string[][] UppercaseLevelMap = {
             new[] { "V", "VB", "VRB", "VERB" },
             new[] { "D", "DE", "DBG", "DBUG" },
             new[] { "I", "IN", "INF", "INFO" },
@@ -55,47 +96,5 @@ namespace Serilog.Sinks.LINQPad.Output
             new[] { "E", "ER", "ERR", "EROR" },
             new[] { "F", "FA", "FTL", "FATL" },
         };
-
-        public static string GetLevelMoniker(LogEventLevel value, string format = null)
-        {
-            if (format == null || format.Length != 2 && format.Length != 3)
-                return Casing.Format(value.ToString(), format);
-
-            // Using int.Parse() here requires allocating a string to exclude the first character prefix.
-            // Junk like "wxy" will be accepted but produce benign results.
-            var width = format[1] - '0';
-            if (format.Length == 3)
-            {
-                width *= 10;
-                width += format[2] - '0';
-            }
-
-            if (width < 1)
-                return string.Empty;
-
-            if (width > 4)
-            {
-                var stringValue = value.ToString();
-                if (stringValue.Length > width)
-                    stringValue = stringValue.Substring(0, width);
-                return Casing.Format(stringValue);
-            }
-
-            var index = (int)value;
-            if (index >= 0 && index <= (int)LogEventLevel.Fatal)
-            {
-                switch (format[0])
-                {
-                    case 'w':
-                        return LowercaseLevelMap[index][width - 1];
-                    case 'u':
-                        return UppercaseLevelMap[index][width - 1];
-                    case 't':
-                        return TitleCaseLevelMap[index][width - 1];
-                }
-            }
-
-            return Casing.Format(value.ToString(), format);
-        }
     }
 }

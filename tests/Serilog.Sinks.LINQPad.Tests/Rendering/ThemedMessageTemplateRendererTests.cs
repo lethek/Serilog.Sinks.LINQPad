@@ -12,7 +12,7 @@ namespace Serilog.Sinks.LINQPad.Rendering
 {
     public class ThemedMessageTemplateRendererTests
     {
-        class Chair
+        private class Chair
         {
             // ReSharper disable UnusedMember.Local
             public string Back => "straight";
@@ -23,7 +23,7 @@ namespace Serilog.Sinks.LINQPad.Rendering
             public override string ToString() => "a chair";
         }
 
-        class Receipt
+        private class Receipt
         {
             // ReSharper disable UnusedMember.Local
             public decimal Sum => 12.345m;
@@ -116,12 +116,12 @@ namespace Serilog.Sinks.LINQPad.Rendering
             Assert.Equal("Please pay 12,345", m);
         }
 
-        static string Render(string messageTemplate, params object[] properties)
+        private static string Render(string messageTemplate, params object[] properties)
         {
             return Render(null, messageTemplate, properties);
         }
 
-        static string Render(IFormatProvider formatProvider, string messageTemplate, params object[] properties)
+        private static string Render(IFormatProvider formatProvider, string messageTemplate, params object[] properties)
         {
             var binder = new LoggerConfiguration().CreateLogger();
             binder.BindMessageTemplate(messageTemplate, properties, out var mt, out var props);

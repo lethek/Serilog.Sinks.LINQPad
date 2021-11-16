@@ -13,27 +13,31 @@
 // limitations under the License.
 
 using System.IO;
+
 using Serilog.Events;
 using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-    class TextTokenRenderer : OutputTemplateTokenRenderer
+    internal class TextTokenRenderer : OutputTemplateTokenRenderer
     {
-        readonly ConsoleTheme _theme;
-        readonly string _text;
-
         public TextTokenRenderer(ConsoleTheme theme, string text)
         {
             _theme = theme;
             _text = text;
         }
 
+
         public override void Render(LogEvent logEvent, TextWriter output)
         {
             var _ = 0;
-            using (_theme.Apply(output, ConsoleThemeStyle.TertiaryText, ref _))
+            using (_theme.Apply(output, ConsoleThemeStyle.TertiaryText, ref _)) {
                 output.Write(_text);
+            }
         }
+
+
+        private readonly ConsoleTheme _theme;
+        private readonly string _text;
     }
 }

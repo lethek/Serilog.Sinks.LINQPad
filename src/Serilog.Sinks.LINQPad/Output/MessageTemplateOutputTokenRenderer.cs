@@ -22,11 +22,11 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-    class MessageTemplateOutputTokenRenderer : OutputTemplateTokenRenderer
+    internal class MessageTemplateOutputTokenRenderer : OutputTemplateTokenRenderer
     {
-        readonly ConsoleTheme _theme;
-        readonly PropertyToken _token;
-        readonly ThemedMessageTemplateRenderer _renderer;
+        private readonly ConsoleTheme _theme;
+        private readonly PropertyToken _token;
+        private readonly ThemedMessageTemplateRenderer _renderer;
 
         public MessageTemplateOutputTokenRenderer(ConsoleTheme theme, PropertyToken token, IFormatProvider formatProvider)
         {
@@ -34,14 +34,13 @@ namespace Serilog.Sinks.LINQPad.Output
             _token = token ?? throw new ArgumentNullException(nameof(token));
             bool isLiteral = false, isJson = false;
 
-            if (token.Format != null)
-            {
-                for (var i = 0; i < token.Format.Length; ++i)
-                {
-                    if (token.Format[i] == 'l')
+            if (token.Format != null) {
+                for (var i = 0; i < token.Format.Length; ++i) {
+                    if (token.Format[i] == 'l') {
                         isLiteral = true;
-                    else if (token.Format[i] == 'j')
+                    } else if (token.Format[i] == 'j') {
                         isJson = true;
+                    }
                 }
             }
 
@@ -54,8 +53,7 @@ namespace Serilog.Sinks.LINQPad.Output
 
         public override void Render(LogEvent logEvent, TextWriter output)
         {
-            if (_token.Alignment == null || !_theme.CanBuffer)
-            {
+            if (_token.Alignment == null || !_theme.CanBuffer) {
                 _renderer.Render(logEvent.MessageTemplate, logEvent.Properties, output);
                 return;
             }

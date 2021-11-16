@@ -14,31 +14,30 @@
 
 using System;
 using System.IO;
+
 using Serilog.Data;
 using Serilog.Events;
 using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Formatting
 {
-    abstract class ThemedValueFormatter : LogEventPropertyValueVisitor<ThemedValueFormatterState, int>
+    internal abstract class ThemedValueFormatter : LogEventPropertyValueVisitor<ThemedValueFormatterState, int>
     {
-        readonly ConsoleTheme _theme;
-
         protected ThemedValueFormatter(ConsoleTheme theme)
-        {
-            _theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        }
+            => _theme = theme ?? throw new ArgumentNullException(nameof(theme));
+
 
         protected StyleReset ApplyStyle(TextWriter output, ConsoleThemeStyle style, ref int invisibleCharacterCount)
-        {
-            return _theme.Apply(output, style, ref invisibleCharacterCount);
-        }
+            => _theme.Apply(output, style, ref invisibleCharacterCount);
+
 
         public int Format(LogEventPropertyValue value, TextWriter output, string format, bool literalTopLevel = false)
-        {
-            return Visit(new ThemedValueFormatterState { Output = output, Format = format, IsTopLevel = literalTopLevel }, value);
-        }
+            => Visit(new ThemedValueFormatterState { Output = output, Format = format, IsTopLevel = literalTopLevel }, value);
+
 
         public abstract ThemedValueFormatter SwitchTheme(ConsoleTheme theme);
+
+
+        private readonly ConsoleTheme _theme;
     }
 }

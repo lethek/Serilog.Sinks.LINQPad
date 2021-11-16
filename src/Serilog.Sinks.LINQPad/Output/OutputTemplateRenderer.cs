@@ -25,15 +25,17 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-
-    class OutputTemplateRenderer : ITextFormatter
+    internal class OutputTemplateRenderer : ITextFormatter
     {
-        readonly OutputTemplateTokenRenderer[] _renderers;
+        private readonly OutputTemplateTokenRenderer[] _renderers;
 
 
         public OutputTemplateRenderer(ConsoleTheme theme, string outputTemplate, IFormatProvider formatProvider)
         {
-            if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
+            if (outputTemplate == null) {
+                throw new ArgumentNullException(nameof(outputTemplate));
+            }
+
             var template = new MessageTemplateParser().Parse(outputTemplate);
 
             var renderers = new List<OutputTemplateTokenRenderer>();
@@ -44,20 +46,28 @@ namespace Serilog.Sinks.LINQPad.Output
                 }
 
                 var pt = (PropertyToken)token;
-                if (pt.PropertyName == OutputProperties.LevelPropertyName) {
-                    renderers.Add(new LevelTokenRenderer(theme, pt));
-                } else if (pt.PropertyName == OutputProperties.NewLinePropertyName) {
-                    renderers.Add(new NewLineTokenRenderer(pt.Alignment));
-                } else if (pt.PropertyName == OutputProperties.ExceptionPropertyName) {
-                    renderers.Add(new ExceptionTokenRenderer(theme, pt));
-                } else if (pt.PropertyName == OutputProperties.MessagePropertyName) {
-                    renderers.Add(new MessageTemplateOutputTokenRenderer(theme, pt, formatProvider));
-                } else if (pt.PropertyName == OutputProperties.TimestampPropertyName) {
-                    renderers.Add(new TimestampTokenRenderer(theme, pt, formatProvider));
-                } else if (pt.PropertyName == "Properties") {
-                    renderers.Add(new PropertiesTokenRenderer(theme, pt, template, formatProvider));
-                } else {
-                    renderers.Add(new EventPropertyTokenRenderer(theme, pt, formatProvider));
+                switch (pt.PropertyName) {
+                    case OutputProperties.LevelPropertyName:
+                        renderers.Add(new LevelTokenRenderer(theme, pt));
+                        break;
+                    case OutputProperties.NewLinePropertyName:
+                        renderers.Add(new NewLineTokenRenderer(pt.Alignment));
+                        break;
+                    case OutputProperties.ExceptionPropertyName:
+                        renderers.Add(new ExceptionTokenRenderer(theme, pt));
+                        break;
+                    case OutputProperties.MessagePropertyName:
+                        renderers.Add(new MessageTemplateOutputTokenRenderer(theme, pt, formatProvider));
+                        break;
+                    case OutputProperties.TimestampPropertyName:
+                        renderers.Add(new TimestampTokenRenderer(theme, pt, formatProvider));
+                        break;
+                    case "Properties":
+                        renderers.Add(new PropertiesTokenRenderer(theme, pt, template, formatProvider));
+                        break;
+                    default:
+                        renderers.Add(new EventPropertyTokenRenderer(theme, pt, formatProvider));
+                        break;
                 }
             }
 
@@ -67,11 +77,17 @@ namespace Serilog.Sinks.LINQPad.Output
 
         public void Format(LogEvent logEvent, TextWriter output)
         {
-            if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
-            if (output == null) throw new ArgumentNullException(nameof(output));
+            if (logEvent == null) {
+                throw new ArgumentNullException(nameof(logEvent));
+            }
 
-            foreach (var renderer in _renderers)
+            if (output == null) {
+                throw new ArgumentNullException(nameof(output));
+            }
+
+            foreach (var renderer in _renderers) {
                 renderer.Render(logEvent, output);
+            }
         }
     }
 

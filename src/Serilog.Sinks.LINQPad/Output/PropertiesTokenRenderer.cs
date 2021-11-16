@@ -24,13 +24,8 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-    class PropertiesTokenRenderer : OutputTemplateTokenRenderer
+    internal class PropertiesTokenRenderer : OutputTemplateTokenRenderer
     {
-        readonly MessageTemplate _outputTemplate;
-        readonly ConsoleTheme _theme;
-        readonly PropertyToken _token;
-        readonly ThemedValueFormatter _valueFormatter;
-
         public PropertiesTokenRenderer(ConsoleTheme theme, PropertyToken token, MessageTemplate outputTemplate, IFormatProvider formatProvider)
         {
             _outputTemplate = outputTemplate;
@@ -38,12 +33,11 @@ namespace Serilog.Sinks.LINQPad.Output
             _token = token ?? throw new ArgumentNullException(nameof(token));
             var isJson = false;
 
-            if (token.Format != null)
-            {
-                for (var i = 0; i < token.Format.Length; ++i)
-                {
-                    if (token.Format[i] == 'j')
+            if (token.Format != null) {
+                for (var i = 0; i < token.Format.Length; ++i) {
+                    if (token.Format[i] == 'j') {
                         isJson = true;
+                    }
                 }
             }
 
@@ -51,6 +45,7 @@ namespace Serilog.Sinks.LINQPad.Output
                 ? (ThemedValueFormatter)new ThemedJsonValueFormatter(theme, formatProvider)
                 : new ThemedDisplayValueFormatter(theme, formatProvider);
         }
+
 
         public override void Render(LogEvent logEvent, TextWriter output)
         {
@@ -61,8 +56,7 @@ namespace Serilog.Sinks.LINQPad.Output
 
             var value = new StructureValue(included);
 
-            if (_token.Alignment == null || !_theme.CanBuffer)
-            {
+            if (_token.Alignment == null || !_theme.CanBuffer) {
                 _valueFormatter.Format(value, output, null);
                 return;
             }
@@ -73,18 +67,23 @@ namespace Serilog.Sinks.LINQPad.Output
             Padding.Apply(output, str, _token.Alignment.Value.Widen(invisible));
         }
 
-        static bool TemplateContainsPropertyName(MessageTemplate template, string propertyName)
+
+        private static bool TemplateContainsPropertyName(MessageTemplate template, string propertyName)
         {
-            foreach (var token in template.Tokens)
-            {
+            foreach (var token in template.Tokens) {
                 if (token is PropertyToken namedProperty &&
-                    namedProperty.PropertyName == propertyName)
-                {
+                    namedProperty.PropertyName == propertyName) {
                     return true;
                 }
             }
 
             return false;
         }
+
+
+        private readonly MessageTemplate _outputTemplate;
+        private readonly ConsoleTheme _theme;
+        private readonly PropertyToken _token;
+        private readonly ThemedValueFormatter _valueFormatter;
     }
 }

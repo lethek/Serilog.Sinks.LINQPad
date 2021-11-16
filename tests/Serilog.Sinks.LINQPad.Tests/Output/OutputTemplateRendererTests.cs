@@ -162,16 +162,14 @@ namespace Serilog.Sinks.LINQPad.Output
             Assert.Equal("  inf", sw.ToString());
         }
 
-
-        enum Size
+        private enum Size
         {
             Large
         }
 
-
-        class SizeFormatter : IFormatProvider, ICustomFormatter
+        private class SizeFormatter : IFormatProvider, ICustomFormatter
         {
-            readonly IFormatProvider _innerFormatProvider;
+            private readonly IFormatProvider _innerFormatProvider;
 
 
             public SizeFormatter(IFormatProvider innerFormatProvider)
@@ -188,11 +186,13 @@ namespace Serilog.Sinks.LINQPad.Output
 
             public string Format(string format, object arg, IFormatProvider formatProvider)
             {
-                if (arg is Size size)
+                if (arg is Size size) {
                     return size == Size.Large ? "Huge" : size.ToString();
+                }
 
-                if (arg is IFormattable formattable)
+                if (arg is IFormattable formattable) {
                     return formattable.ToString(format, _innerFormatProvider);
+                }
 
                 return arg.ToString();
             }

@@ -30,7 +30,7 @@ namespace Serilog
     /// </summary>
     public static class ConsoleLoggerConfigurationExtensions
     {
-        const string DefaultConsoleOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
+        private const string DefaultConsoleOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
 
         /// <summary>
         /// Writes log events to <see cref="System.Console"/>.
@@ -44,7 +44,7 @@ namespace Serilog
         /// <param name="levelSwitch">A switch allowing the pass-through minimum level
         /// to be changed at runtime.</param>
         /// <param name="theme">The theme to apply to the styled output. If not specified,
-        /// uses <see cref="LINQPadTheme.Literate"/>.</param>
+        /// uses <see cref="LINQPadTheme.LINQPadLiterate"/> or if dark-mode is enabled <see cref="LINQPadTheme.LINQPadDark"/>.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration LINQPad(
             this LoggerSinkConfiguration sinkConfiguration,
@@ -54,8 +54,13 @@ namespace Serilog
             LoggingLevelSwitch levelSwitch = null,
             ConsoleTheme theme = null)
         {
-            if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
-            if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
+            if (sinkConfiguration == null) {
+                throw new ArgumentNullException(nameof(sinkConfiguration));
+            }
+
+            if (outputTemplate == null) {
+                throw new ArgumentNullException(nameof(outputTemplate));
+            }
 
             var appliedTheme = theme ?? (Util.IsDarkThemeEnabled ? DefaultThemes.LINQPadDark : DefaultThemes.LINQPadLiterate);
 
@@ -80,8 +85,13 @@ namespace Serilog
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
             LoggingLevelSwitch levelSwitch = null)
         {
-            if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
-            if (formatter == null) throw new ArgumentNullException(nameof(formatter));
+            if (sinkConfiguration == null) {
+                throw new ArgumentNullException(nameof(sinkConfiguration));
+            }
+
+            if (formatter == null) {
+                throw new ArgumentNullException(nameof(formatter));
+            }
 
             return sinkConfiguration.Sink(new LINQPadSink(DefaultThemes.None, formatter), restrictedToMinimumLevel, levelSwitch);
         }

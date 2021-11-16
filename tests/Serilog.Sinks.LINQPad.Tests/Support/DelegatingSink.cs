@@ -6,7 +6,7 @@ namespace Serilog.Sinks.LINQPad.Support
 {
     public class DelegatingSink : ILogEventSink
     {
-        readonly Action<LogEvent> _write;
+        private readonly Action<LogEvent> _write;
 
         public DelegatingSink(Action<LogEvent> write)
         {

@@ -13,11 +13,12 @@
 // limitations under the License.
 
 using System.IO;
+
 using Serilog.Events;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-    abstract class OutputTemplateTokenRenderer
+    internal abstract class OutputTemplateTokenRenderer
     {
         public abstract void Render(LogEvent logEvent, TextWriter output);
     }

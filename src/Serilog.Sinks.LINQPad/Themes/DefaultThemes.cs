@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -25,7 +24,6 @@ namespace Serilog.Sinks.LINQPad.Themes
         /// No styling applied.
         /// </summary>
         public static ConsoleTheme None { get; } = new EmptyConsoleTheme();
-
 
 
         public static LINQPadTheme LINQPadDark { get; } = new LINQPadTheme(
@@ -111,6 +109,7 @@ namespace Serilog.Sinks.LINQPad.Themes
                 [ConsoleThemeStyle.LevelFatal] = new LINQPadThemeStyle { Foreground = Color.White, Background = Color.Red },
             });
 
+
         public static LINQPadTheme Grayscale { get; } = new LINQPadTheme(
             new Dictionary<ConsoleThemeStyle, LINQPadThemeStyle> {
                 [ConsoleThemeStyle.Text] = new LINQPadThemeStyle { Foreground = Color.White },
@@ -130,6 +129,7 @@ namespace Serilog.Sinks.LINQPad.Themes
                 [ConsoleThemeStyle.LevelError] = new LINQPadThemeStyle { Foreground = Color.Black, Background = Color.White },
                 [ConsoleThemeStyle.LevelFatal] = new LINQPadThemeStyle { Foreground = Color.Black, Background = Color.White },
             });
+
 
         public static LINQPadTheme Colored { get; } = new LINQPadTheme(
             new Dictionary<ConsoleThemeStyle, LINQPadThemeStyle> {

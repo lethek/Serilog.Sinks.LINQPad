@@ -14,6 +14,7 @@
 
 using System;
 using System.IO;
+
 using Serilog.Events;
 using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Rendering;
@@ -21,18 +22,15 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-    class TimestampTokenRenderer : OutputTemplateTokenRenderer
+    internal class TimestampTokenRenderer : OutputTemplateTokenRenderer
     {
-        readonly ConsoleTheme _theme;
-        readonly PropertyToken _token;
-        readonly IFormatProvider _formatProvider;
-
         public TimestampTokenRenderer(ConsoleTheme theme, PropertyToken token, IFormatProvider formatProvider)
         {
             _theme = theme;
             _token = token;
             _formatProvider = formatProvider;
         }
+
 
         public override void Render(LogEvent logEvent, TextWriter output)
         {
@@ -41,14 +39,10 @@ namespace Serilog.Sinks.LINQPad.Output
             var sv = new ScalarValue(logEvent.Timestamp);
 
             var _ = 0;
-            using (_theme.Apply(output, ConsoleThemeStyle.SecondaryText, ref _))
-            {
-                if (_token.Alignment == null)
-                {
+            using (_theme.Apply(output, ConsoleThemeStyle.SecondaryText, ref _)) {
+                if (_token.Alignment == null) {
                     sv.Render(output, _token.Format, _formatProvider);
-                }
-                else
-                {
+                } else {
                     var buffer = new StringWriter();
                     sv.Render(buffer, _token.Format, _formatProvider);
                     var str = buffer.ToString();
@@ -56,5 +50,10 @@ namespace Serilog.Sinks.LINQPad.Output
                 }
             }
         }
+
+
+        private readonly ConsoleTheme _theme;
+        private readonly PropertyToken _token;
+        private readonly IFormatProvider _formatProvider;
     }
 }

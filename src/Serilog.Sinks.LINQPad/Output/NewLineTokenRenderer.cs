@@ -14,6 +14,7 @@
 
 using System;
 using System.IO;
+
 using Serilog.Events;
 using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Rendering;
@@ -21,21 +22,20 @@ using Serilog.Sinks.LINQPad.Rendering;
 
 namespace Serilog.Sinks.LINQPad.Output
 {
-    class NewLineTokenRenderer : OutputTemplateTokenRenderer
+    internal class NewLineTokenRenderer : OutputTemplateTokenRenderer
     {
-        readonly Alignment? _alignment;
+        private readonly Alignment? _alignment;
 
         public NewLineTokenRenderer(Alignment? alignment)
-        {
-            _alignment = alignment;
-        }
+            => _alignment = alignment;
 
         public override void Render(LogEvent logEvent, TextWriter output)
         {
-            if (_alignment.HasValue)
+            if (_alignment.HasValue) {
                 Padding.Apply(output, Environment.NewLine, _alignment.Value.Widen(Environment.NewLine.Length));
-            else
+            } else {
                 output.WriteLine();
+            }
         }
     }
 }

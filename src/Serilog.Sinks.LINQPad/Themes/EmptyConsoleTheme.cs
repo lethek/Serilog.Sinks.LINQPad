@@ -12,26 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.IO;
 
 
 namespace Serilog.Sinks.LINQPad.Themes
 {
-
-    class EmptyConsoleTheme : ConsoleTheme
+    internal class EmptyConsoleTheme : ConsoleTheme
     {
         public override bool CanBuffer => true;
 
         protected override int ResetCharCount { get; }
 
-        public override int Set(TextWriter output, ConsoleThemeStyle style) => 0;
+        public override int Set(TextWriter output, ConsoleThemeStyle style)
+            => 0;
 
         public override void Reset(TextWriter output) { }
 
-        public override void ApplyColors(TextWriter output)
-        {
-        }
+        public override void ApplyColors(TextWriter output) { }
     }
 
 }

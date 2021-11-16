@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Drawing;
 
 
@@ -47,7 +46,7 @@ namespace Serilog.Sinks.LINQPad.Themes
         }
 
 
-        public static LINQPadThemeStyle None = new LINQPadThemeStyle();
+        public static readonly LINQPadThemeStyle None = new LINQPadThemeStyle();
     }
 
 }
