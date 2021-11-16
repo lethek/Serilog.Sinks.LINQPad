@@ -1,7 +1,9 @@
 Serilog.Sinks.LINQPad
 =====================
-Version 3.1
------------
+
+[![Build Status](https://dev.azure.com/SMMX/Serilog.Sinks.LINQPad/_apis/build/status/lethek.Serilog.Sinks.LINQPad?branchName=master)](https://dev.azure.com/SMMX/Serilog.Sinks.LINQPad/_build/latest?definitionId=2&branchName=master)
+[![NuGet Stats](https://img.shields.io/nuget/v/Serilog.Sinks.LINQPad.svg)](https://www.nuget.org/packages/Serilog.Sinks.LINQPad)
+[![GitHub license](https://img.shields.io/github/license/lethek/Serilog.Sinks.LINQPad)](https://github.com/lethek/Serilog.Sinks.LINQPad/blob/master/LICENSE)
 
 Serilog sink to publish colored output to the LINQPad Results panel. At present, a large percentage of the code has been shamelessly ripped from [ConsoleSink](https://github.com/serilog/serilog-sinks-console), with modifications to allow LINQPad to display colored results and the ability to customize the color scheme.
 

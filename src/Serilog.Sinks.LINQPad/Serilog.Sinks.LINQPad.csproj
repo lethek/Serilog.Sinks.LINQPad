@@ -10,6 +10,7 @@
 		<PackageProjectUrl>https://github.com/lethek/Serilog.Sinks.LINQPad</PackageProjectUrl>
 		<PackageIcon>icon.png</PackageIcon>
 		<PackageTags>serilog;linqpad;logging;log;sink</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/lethek/Serilog.Sinks.LINQPad.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<CheckEolTargetFramework>false</CheckEolTargetFramework>
@@ -42,5 +43,6 @@
 
 	<ItemGroup>
 		<None Include="..\..\assets\icon.png" Pack="true" Visible="false" PackagePath="" />
+		<None Include="..\..\README.md" Pack="true" Visible="false" PackagePath="" />
 	</ItemGroup>
 </Project>
