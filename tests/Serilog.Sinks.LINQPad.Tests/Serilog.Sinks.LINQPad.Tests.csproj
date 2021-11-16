@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Serilog.Sinks.LINQPad</RootNamespace>
     <Platforms>x86</Platforms>
+    <OutputPath>bin\$(Configuration)</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

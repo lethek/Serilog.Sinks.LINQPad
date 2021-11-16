@@ -46,7 +46,7 @@ steps:
   displayName: Test
   inputs:
     command: 'test'
-    arguments: '--configuration $(buildConfiguration) --collect "Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    arguments: '--configuration $(buildConfiguration)'
     nobuild: true
 
 - task: DotNetCoreCLI@2
