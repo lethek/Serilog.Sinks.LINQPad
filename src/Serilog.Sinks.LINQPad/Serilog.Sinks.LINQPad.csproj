@@ -10,7 +10,7 @@
 		<PackageProjectUrl>https://github.com/lethek/Serilog.Sinks.LINQPad</PackageProjectUrl>
 		<PackageIcon>icon.png</PackageIcon>
 		<PackageTags>serilog;linqpad;logging;log;sink</PackageTags>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<!--<PackageReadmeFile>README.md</PackageReadmeFile>-->
 		<RepositoryUrl>https://github.com/lethek/Serilog.Sinks.LINQPad.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<CheckEolTargetFramework>false</CheckEolTargetFramework>
