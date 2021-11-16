@@ -13,31 +13,14 @@ namespace Serilog.Sinks.LINQPad
     internal class ThemedHtmlWriter : TextWriter
     {
         public ThemedHtmlWriter(ConsoleTheme theme)
-            : this(theme, new StringBuilder(), CultureInfo.CurrentCulture) { }
+            : this(theme, CultureInfo.CurrentCulture) { }
 
 
         public ThemedHtmlWriter(ConsoleTheme theme, IFormatProvider formatProvider)
-            : this(theme, new StringBuilder(), formatProvider) { }
-
-
-        public ThemedHtmlWriter(ConsoleTheme theme, StringBuilder sb)
-            : this(theme, sb, CultureInfo.CurrentCulture) { }
-
-
-        public ThemedHtmlWriter(ConsoleTheme theme, StringBuilder sb, IFormatProvider formatProvider)
             : base(formatProvider)
         {
-            _writer = new StringWriter(sb, formatProvider);
+            _writer = new StringWriter(_builder, formatProvider);
             _theme = theme;
-        }
-
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing) {
-                _writer?.Dispose();
-            }
-            base.Dispose(disposing);
         }
 
 
@@ -59,11 +42,32 @@ namespace Serilog.Sinks.LINQPad
         }
 
 
+        public override void Flush()
+            => _writer.Flush();
+
+
+        public void Clear()
+            => _builder.Clear();
+
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) {
+                _writer?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+
         public override Encoding Encoding => _writer.Encoding;
 
 
         private readonly ConsoleTheme _theme;
         private readonly StringWriter _writer;
+        private readonly StringBuilder _builder = new StringBuilder(DefaultWriteBufferCapacity);
+
+
+        private const int DefaultWriteBufferCapacity = 360;
     }
 
 }

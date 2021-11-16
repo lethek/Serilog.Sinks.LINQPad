@@ -18,40 +18,47 @@ using Serilog.Formatting;
 using Serilog.Sinks.LINQPad.Themes;
 
 using System;
-using System.Text;
 
 using LINQPad;
-
 
 namespace Serilog.Sinks.LINQPad
 {
 
-    internal class LINQPadSink : ILogEventSink
+    internal class LINQPadSink : ILogEventSink, IDisposable
     {
         public LINQPadSink(ConsoleTheme theme, ITextFormatter formatter)
         {
             _theme = theme ?? throw new ArgumentNullException(nameof(theme));
             _formatter = formatter;
+            _writer = new ThemedHtmlWriter(_theme);
         }
 
 
         public void Emit(LogEvent logEvent)
         {
-            using (var buffer = new ThemedHtmlWriter(_theme, new StringBuilder(DefaultWriteBufferCapacity))) {
-                lock (SyncRoot) {
-                    _formatter.Format(logEvent, buffer);
-                    Util.RawHtml($"<span style='white-space:pre-wrap'>{buffer}</span>").Dump();
-                }
+            lock (SyncRoot) {
+                _formatter.Format(logEvent, _writer);
+                Util.RawHtml($"<span style='white-space:pre-wrap'>{_writer}</span>").Dump();
+                _writer.Clear();
             }
         }
 
 
+        public void Dispose()
+        {
+            if (!_disposed) {
+                _writer.Dispose();
+                _disposed = true;
+            }
+        }
+
+
+        private bool _disposed;
+
+
         private readonly ConsoleTheme _theme;
         private readonly ITextFormatter _formatter;
-
-
-        private const int DefaultWriteBufferCapacity = 256;
-
+        private readonly ThemedHtmlWriter _writer;
 
         private static readonly object SyncRoot = new object();
     }
