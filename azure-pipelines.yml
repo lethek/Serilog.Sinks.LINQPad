@@ -23,10 +23,10 @@ steps:
     additionalArguments: '/output BuildServer'
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 5 SDK'
+  displayName: 'Use .NET 6 SDK'
   inputs:
     packageType: 'sdk'
-    version: '5.x'
+    version: '6.x'
     performMultiLevelLookup: true
 
 - task: NuGetAuthenticate@0
