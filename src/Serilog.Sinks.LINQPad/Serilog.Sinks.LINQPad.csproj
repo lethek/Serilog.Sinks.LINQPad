@@ -7,22 +7,19 @@
     <Authors>Serilog Contributors, Michael Monsour</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageProjectUrl>https://github.com/lethek/Serilog.Sinks.LINQPad</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>serilog;linqpad;logging;log;sink</PackageTags>
+    <PackageTags>serilog linqpad logging log sink</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/lethek/Serilog.Sinks.LINQPad.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/lethek/Serilog.Sinks.LINQPad</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/lethek/Serilog.Sinks.LINQPad</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
-    <OutputPath>bin\$(Configuration)</OutputPath>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>$(AssemblyName).Tests</_Parameter1>
-    </AssemblyAttribute>
+    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">

@@ -25,8 +25,4 @@
     <ProjectReference Include="..\..\src\Serilog.Sinks.LINQPad\Serilog.Sinks.LINQPad.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-
 </Project>
