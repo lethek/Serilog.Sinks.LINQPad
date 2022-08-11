@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netcoreapp3.0;net46</TargetFrameworks>
+		<TargetFrameworks>netcoreapp3.1;net48</TargetFrameworks>
 		<Company>Serilog Contributors</Company>
 		<Copyright>Copyright © Serilog Contributors 2015</Copyright>
 		<Description>Serilog sink that writes colored output to the LINQPad Results panel. This package is only useful, and usable from within LINQPad.</Description>
@@ -24,13 +24,13 @@
 		</AssemblyAttribute>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
 		<PackageReference Include="LINQPad.Runtime">
-			<Version>6.14.10</Version>
+			<Version>7.2.7</Version>
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net48'">
 		<PackageReference Include="LINQPad">
 			<Version>5.40.0</Version>
 		</PackageReference>
