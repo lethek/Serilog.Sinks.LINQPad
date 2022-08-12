@@ -37,12 +37,12 @@ using Serilog.Sinks.LINQPad;
 using Serilog.Sinks.LINQPad.Themes;
 
 //Either get a pre-defined Serilog.Sinks.LINQPad.Themes.ConsoleTheme instance, there are several static defaults here:
-theme = DefaultThemes.LINQPadLiterate; //This is the default normally. Based on the Literate theme from the ConsoleSink project, but modified for white backgrounds.
-theme = DefaultThemes.LINQPadDark; //This is the default for dark-mode.
-theme = DefaultThemes.LINQPadColored; //Similar to the Colored theme in the ConsoleSink project. It's been modified to look better on white backgrounds.
-theme = DefaultThemes.Literate; //Identical to the Literate theme (which is the default) in the ConsoleSink project. Designed for black console backgrounds.
 theme = DefaultThemes.Colored; //Identical to the Colored theme in the ConsoleSink project. Designed for black console backgrounds.
 theme = DefaultThemes.Grayscale; //Identical to the Grayscale theme in the ConsoleSink project. Designed for black console backgrounds.
+theme = DefaultThemes.LINQPadColored; //Similar to the Colored theme in the ConsoleSink project. It's been modified to look better on white backgrounds.
+theme = DefaultThemes.LINQPadDark; //This is the default for dark-mode.
+theme = DefaultThemes.LINQPadLiterate; //This is the default normally. Based on the Literate theme from the ConsoleSink project, but modified for white backgrounds.
+theme = DefaultThemes.Literate; //Identical to the Literate theme (which is the default) in the ConsoleSink project. Designed for black console backgrounds.
 
 //Or create a new theme from scratch:
 theme = new LINQPadTheme(
