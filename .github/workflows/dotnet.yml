@@ -40,19 +40,13 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build -c ${{ env.buildConfiguration }} --no-restore -p:Version=$NUGETVER -p:FileVersion=$SEMVER -p:AssemblyVersion=$ASSEMBLYVER
-      env:
-        NUGETVER: ${{ steps.gitversion.outputs.nuGetVersion }}
-        SEMVER: ${{ steps.gitversion.outputs.assemblySemFileVer }}
-        ASSEMBLYVER: 1.0.0.0
+      run: dotnet build -c ${{ env.buildConfiguration }} --no-restore -p:Version=${{ steps.gitversion.outputs.nuGetVersion }} -p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} -p:AssemblyVersion=1.0.0.0
 
     - name: Test
       run: dotnet test -c ${{ env.buildConfiguration }} --no-build -v normal --filter FullyQualifiedName!~IntegrationTests
 
     - name: Pack
-      run: dotnet pack -c ${{ env.buildConfiguration }} -o "${{ github.workspace }}/artifacts/" -p:PackageVersion=$NUGETVER
-      env:
-        NUGETVER: ${{ steps.gitversion.outputs.nuGetVersion }}
+      run: dotnet pack -c ${{ env.buildConfiguration }} -o "${{ github.workspace }}/artifacts/" -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersion }}
 
     - name: Upload
       uses: actions/upload-artifact@v3
@@ -64,14 +58,8 @@ jobs:
 
     - name: Push (Pre-release)
       if: ${{ steps.gitversion.outputs.nuGetPreReleaseTag != '' }}
-      run: dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" -s $NUGET_SOURCE -k $NUGET_API_KEY --skip-duplicate
-      env:
-        NUGET_SOURCE: ${{ secrets.MYGET_SOURCE }}
-        NUGET_API_KEY: ${{ secrets.MYGET_API_KEY }}
+      run: dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" -s ${{ secrets.MYGET_SOURCE }} -k ${{ secrets.MYGET_API_KEY }} --skip-duplicate
 
     - name: Push (Release)
       if: ${{ steps.gitversion.outputs.nuGetPreReleaseTag == '' }}
-      run: dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" -s $NUGET_SOURCE -k $NUGET_API_KEY --skip-duplicate
-      env:
-        NUGET_SOURCE: ${{ secrets.NUGET_SOURCE }}
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" -s ${{ secrets.NUGET_SOURCE }} -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
