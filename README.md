@@ -1,7 +1,6 @@
-Serilog.Sinks.LINQPad
-=====================
+# Serilog.Sinks.LINQPad
 
-[![Build Status](https://dev.azure.com/SMMX/Serilog.Sinks.LINQPad/_apis/build/status/lethek.Serilog.Sinks.LINQPad?branchName=master)](https://dev.azure.com/SMMX/Serilog.Sinks.LINQPad/_build/latest?definitionId=2&branchName=master)
+[![Build & Publish](https://github.com/lethek/Serilog.Sinks.LINQPad/actions/workflows/dotnet.yml/badge.svg)](https://github.com/lethek/Serilog.Sinks.LINQPad/actions/workflows/dotnet.yml)
 [![NuGet Stats](https://img.shields.io/nuget/v/Serilog.Sinks.LINQPad.svg)](https://www.nuget.org/packages/Serilog.Sinks.LINQPad)
 [![GitHub license](https://img.shields.io/github/license/lethek/Serilog.Sinks.LINQPad)](https://github.com/lethek/Serilog.Sinks.LINQPad/blob/master/LICENSE)
 
@@ -9,13 +8,14 @@ Serilog sink to publish colored output to the LINQPad Results panel. At present,
 
 **Important:** This NuGet package is only useful (and usable) when using Serilog within LINQPad scripts.
 
-### Getting started
-Install the [Serilog.Sinks.LINQPad](https://nuget.org/packages/serilog.sinks.linqpad) package from NuGet:
-```
-PM> Install-Package Serilog.Sinks.LINQPad
-```
+## Getting started
+
+---
+
+In your LINQPad script, install the [Serilog.Sinks.LINQPad](https://www.nuget.org/packages/Serilog.Sinks.LINQPad) package from NuGet.
 
 To configure the sink in C# code, call `WriteTo.LINQPad()` during logger configuration:
+
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .WriteTo.LINQPad()
@@ -24,7 +24,10 @@ Log.Logger = new LoggerConfiguration()
 
 Log events will be printed with color to the LINQPad results-panel.
 
-### Custom color schemes
+## Custom color schemes
+
+---
+
 By default, the LINQPad sink will use colors which look better on a white/light background than a darker one. However, if you have customized your "Style sheet for text (HTML) results" in the LINQPad Preferences window, you might find that the colors used by the sink are no longer readable. Or they might simply just not be to your taste.
 
 If that's the case, see these examples for how to customize the colors:
@@ -77,6 +80,7 @@ Log.Logger = new LoggerConfiguration()
 ```
 
 Alternatively, if no theme is specified when the sink is configured, it will automatically choose one of the defaults: either the static `DefaultThemes.LINQPadLiterate` when LINQPad is using its Windows Default theme or `DefaultThemes.LINQPadDark` when LINQPad is using its Dark theme.
+
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .WriteTo.LINQPad()
@@ -84,11 +88,14 @@ Log.Logger = new LoggerConfiguration()
 ```
 
 Note: the static default themes can be modified but could affect other instances of the sink:
-```
+
+```csharp
 DefaultThemes.LINQPadLiterate[ConsoleThemeStyle.String] = new LINQPadThemeStyle(Color.DeepSkyBlue);
 ```
 
-### Output templates
+## Output templates
+
+---
 
 The format of events to the console can be modified using the `outputTemplate` configuration parameter:
 
@@ -101,5 +108,7 @@ The format of events to the console can be modified using the `outputTemplate` c
 The default template, shown in the example above, uses built-in properties like `Timestamp` and `Level`. Properties from events, including those attached using [enrichers](https://github.com/serilog/serilog/wiki/Enrichment), can also appear in the output template.
 
 For more compact level names, use a format such as `{Level:u3}` or `{Level:w3}` for three-character upper- or lowercase level names, respectively.
+
+---
 
 _Copyright &copy; 2016 Serilog Contributors - Provided under the [Apache License, Version 2.0](http://apache.org/licenses/LICENSE-2.0.html)._
