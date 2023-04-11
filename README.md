@@ -111,4 +111,21 @@ For more compact level names, use a format such as `{Level:u3}` or `{Level:w3}` 
 
 ---
 
+## Log to DumpContainer
+
+---
+
+Optional log to a specified `DumpContainer`.
+
+```csharp
+DumpContainer logContainer = new DumpContainer().Dump("Log Messages");
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.LINQPad(dumpContainer: logContainer)
+    .CreateLogger();
+```
+
+Writes the log messages to the specified `DumpContainer`, when not wanted directly appended to the result panel.
+
+---
+
 _Copyright &copy; 2016 Serilog Contributors - Provided under the [Apache License, Version 2.0](http://apache.org/licenses/LICENSE-2.0.html)._
