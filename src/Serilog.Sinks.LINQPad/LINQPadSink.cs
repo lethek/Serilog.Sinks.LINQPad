@@ -20,17 +20,20 @@ using Serilog.Sinks.LINQPad.Themes;
 using System;
 
 using LINQPad;
+using Serilog.Sinks.LINQPad.Output;
+using System.Collections.Generic;
 
 namespace Serilog.Sinks.LINQPad
 {
 
     internal class LINQPadSink : ILogEventSink, IDisposable
     {
-        public LINQPadSink(ConsoleTheme theme, ITextFormatter formatter)
+        public LINQPadSink(ConsoleTheme theme, ITextFormatter formatter, DumpContainer dumpContainer = null)
         {
             _theme = theme ?? throw new ArgumentNullException(nameof(theme));
             _formatter = formatter;
             _writer = new ThemedHtmlWriter(_theme);
+            _dumpContainer = dumpContainer;
         }
 
 
@@ -38,7 +41,20 @@ namespace Serilog.Sinks.LINQPad
         {
             lock (SyncRoot) {
                 _formatter.Format(logEvent, _writer);
-                Util.RawHtml($"<span style='white-space:pre-wrap'>{_writer}</span>").Dump();
+
+                var rawHtml = Util.RawHtml($"<span style='white-space:pre-wrap'>{_writer}</span>");
+
+                if (_dumpContainer != null) {
+
+#if NETCOREAPP3_1_OR_GREATER
+                    _dumpContainer.AppendContent(rawHtml);
+#elif NET48_OR_GREATER
+                    _content.Add(rawHtml);
+                    _dumpContainer.Content = Util.VerticalRun(_content);
+#endif
+                } else {
+                    rawHtml.Dump();
+                }
                 _writer.Clear();
             }
         }
@@ -59,6 +75,11 @@ namespace Serilog.Sinks.LINQPad
         private readonly ConsoleTheme _theme;
         private readonly ITextFormatter _formatter;
         private readonly ThemedHtmlWriter _writer;
+        private readonly DumpContainer _dumpContainer;
+
+#if NET48_OR_GREATER
+        private readonly List<object> _content = new List<object>();
+#endif
 
         private static readonly object SyncRoot = new object();
     }
