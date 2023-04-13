@@ -46,7 +46,7 @@ jobs:
       run: dotnet test -c ${{ env.buildConfiguration }} --no-build -v normal --filter FullyQualifiedName!~IntegrationTests
 
     - name: Pack
-      run: dotnet pack -c ${{ env.buildConfiguration }} -o "${{ github.workspace }}/artifacts/" -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersion }}
+      run: dotnet pack -c ${{ env.buildConfiguration }} -p:PackageOutputPath="${{ github.workspace }}/artifacts/" -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersion }}
 
     - name: Upload
       uses: actions/upload-artifact@v3
@@ -56,16 +56,20 @@ jobs:
           ${{ github.workspace }}/artifacts/*.nupkg
           ${{ github.workspace }}/artifacts/*.snupkg
 
-    - name: Push (Pre-release)
-      if: ${{ steps.gitversion.outputs.nuGetPreReleaseTag != '' }}
-      uses: KnicKnic/os-specific-run@v1.0.4
+    - name: Push (Release)
+      env:
+        MYGET_SOURCE: ${{ secrets.MYGET_SOURCE }}
+      if: ${{ steps.gitversion.outputs.nuGetPreReleaseTag != '' && env.MYGET_SOURCE != '' }}
+      uses: lethek/os-specific-run@v1.0.6
       with:
         linux: dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" -s ${{ secrets.MYGET_SOURCE }} -k ${{ secrets.MYGET_API_KEY }} --skip-duplicate
         windows: dotnet nuget push "${{ github.workspace }}\artifacts\*.nupkg" -s ${{ secrets.MYGET_SOURCE }} -k ${{ secrets.MYGET_API_KEY }} --skip-duplicate
 
     - name: Push (Release)
-      if: ${{ steps.gitversion.outputs.nuGetPreReleaseTag == '' }}
-      uses: KnicKnic/os-specific-run@v1.0.4
+      env:
+        NUGET_SOURCE: ${{ secrets.NUGET_SOURCE }}
+      if: ${{ steps.gitversion.outputs.nuGetPreReleaseTag == '' && env.NUGET_SOURCE != '' }}
+      uses: lethek/os-specific-run@v1.0.6
       with:
         linux: dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" -s ${{ secrets.NUGET_SOURCE }} -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
         windows: dotnet nuget push "${{ github.workspace }}\artifacts\*.nupkg" -s ${{ secrets.NUGET_SOURCE }} -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
