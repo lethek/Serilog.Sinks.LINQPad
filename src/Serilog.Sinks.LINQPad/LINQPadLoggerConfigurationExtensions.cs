@@ -45,6 +45,7 @@ namespace Serilog
         /// to be changed at runtime.</param>
         /// <param name="theme">The theme to apply to the styled output. If not specified,
         /// uses <see cref="LINQPadTheme.LINQPadLiterate"/> or if dark-mode is enabled <see cref="LINQPadTheme.LINQPadDark"/>.</param>
+        /// <param name="dumpContainer">optional write to a specified <see cref="DumpContainer"/> and not direct to the result panel</param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration LINQPad(
             this LoggerSinkConfiguration sinkConfiguration,
@@ -52,7 +53,9 @@ namespace Serilog
             string outputTemplate = DefaultConsoleOutputTemplate,
             IFormatProvider formatProvider = null,
             LoggingLevelSwitch levelSwitch = null,
-            ConsoleTheme theme = null)
+            ConsoleTheme theme = null,
+            DumpContainer dumpContainer = null
+            )
         {
             if (sinkConfiguration == null) {
                 throw new ArgumentNullException(nameof(sinkConfiguration));
@@ -65,7 +68,7 @@ namespace Serilog
             var appliedTheme = theme ?? (Util.IsDarkThemeEnabled ? DefaultThemes.LINQPadDark : DefaultThemes.LINQPadLiterate);
 
             var formatter = new OutputTemplateRenderer(appliedTheme, outputTemplate, formatProvider);
-            return sinkConfiguration.Sink(new LINQPadSink(appliedTheme, formatter), restrictedToMinimumLevel, levelSwitch);
+            return sinkConfiguration.Sink(new LINQPadSink(appliedTheme, formatter, dumpContainer), restrictedToMinimumLevel, levelSwitch);
         }
 
         /// <summary>
@@ -78,12 +81,14 @@ namespace Serilog
         /// events passed through the sink. Ignored when <paramref name="levelSwitch"/> is specified.</param>
         /// <param name="levelSwitch">A switch allowing the pass-through minimum level
         /// to be changed at runtime.</param>
+        /// <param name="dumpContainer">optional write to a specified <see cref="DumpContainer"/> and not direct to the result panel</param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration LINQPad(
             this LoggerSinkConfiguration sinkConfiguration,
             ITextFormatter formatter,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-            LoggingLevelSwitch levelSwitch = null)
+            LoggingLevelSwitch levelSwitch = null,
+            DumpContainer dumpContainer = null)
         {
             if (sinkConfiguration == null) {
                 throw new ArgumentNullException(nameof(sinkConfiguration));
@@ -93,7 +98,7 @@ namespace Serilog
                 throw new ArgumentNullException(nameof(formatter));
             }
 
-            return sinkConfiguration.Sink(new LINQPadSink(DefaultThemes.None, formatter), restrictedToMinimumLevel, levelSwitch);
+            return sinkConfiguration.Sink(new LINQPadSink(DefaultThemes.None, formatter, dumpContainer), restrictedToMinimumLevel, levelSwitch);
         }
     }
 }

@@ -1,5 +1,7 @@
 using System;
 
+using LINQPad;
+
 using Serilog.Events;
 using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Output;
@@ -24,5 +26,25 @@ namespace Serilog.Sinks.LINQPad
         }
 
         private const string DefaultConsoleOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
+
+
+        [Fact]
+        public void TestDumpContainer()
+        {
+            var theme = DefaultThemes.LINQPadLiterate;
+            var formatter = new OutputTemplateRenderer(theme, DefaultConsoleOutputTemplate, null);
+            var dcLogger = new DumpContainer();
+            var sink = new LINQPadSink(theme, formatter, dcLogger);
+
+            var contentChanged = false;
+            dcLogger.ContentChanged += (s, e) => contentChanged = true;
+
+            var msg = new MessageTemplate("Hello World", new MessageTemplateToken[0]);
+            var evt = new LogEvent(DateTimeOffset.UtcNow, LogEventLevel.Debug, null, msg, new LogEventProperty[0]);
+
+            sink.Emit(evt);
+
+            Assert.True(contentChanged);
+        }
     }
 }
