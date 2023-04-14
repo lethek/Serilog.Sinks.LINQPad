@@ -1,6 +1,7 @@
 using System;
+using System.Linq;
 
-using LINQPad;
+using LP = LINQPad;
 
 using Serilog.Events;
 using Serilog.Parsing;
@@ -14,37 +15,43 @@ namespace Serilog.Sinks.LINQPad
     public class LINQPadSinkTests
     {
         [Fact]
-        public void Test1()
+        public void EmitToOutputHasNoExceptions()
         {
-            var theme = DefaultThemes.LINQPadLiterate;
-            var formatter = new OutputTemplateRenderer(theme, DefaultConsoleOutputTemplate, null);
-            var sink = new LINQPadSink(theme, formatter);
+            var formatter = new OutputTemplateRenderer(DefaultTestTheme, DefaultConsoleOutputTemplate, null);
+            var sink = new LINQPadSink(DefaultTestTheme, formatter);
 
-            var msg = new MessageTemplate("Hello World", new MessageTemplateToken[0]);
-            var evt = new LogEvent(DateTimeOffset.UtcNow, LogEventLevel.Debug, null, msg, new LogEventProperty[0]);
-            sink.Emit(evt);
+            sink.Emit(CreateLogEvent("Hello LINQPad"));
+
+            //I can't find any way to assert that content was really written to LINQPad's results output panel, so this test
+            //merely ensures that no exceptions are thrown instead
         }
-
-        private const string DefaultConsoleOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
 
 
         [Fact]
-        public void TestDumpContainer()
+        public void EmitToDumpContainerChangesContent()
         {
-            var theme = DefaultThemes.LINQPadLiterate;
-            var formatter = new OutputTemplateRenderer(theme, DefaultConsoleOutputTemplate, null);
-            var dcLogger = new DumpContainer();
-            var sink = new LINQPadSink(theme, formatter, dcLogger);
-
             var contentChanged = false;
+            var dcLogger = new LP.DumpContainer();
             dcLogger.ContentChanged += (s, e) => contentChanged = true;
 
-            var msg = new MessageTemplate("Hello World", new MessageTemplateToken[0]);
-            var evt = new LogEvent(DateTimeOffset.UtcNow, LogEventLevel.Debug, null, msg, new LogEventProperty[0]);
+            var formatter = new OutputTemplateRenderer(DefaultTestTheme, DefaultConsoleOutputTemplate, null);
+            var sink = new LINQPadSink(DefaultTestTheme, formatter, dcLogger);
 
-            sink.Emit(evt);
+            sink.Emit(CreateLogEvent("Hello LINQPad"));
 
-            Assert.True(contentChanged);
+            Assert.True(contentChanged, "Content in the DumpContainer should have changed.");
         }
+
+
+        private static LogEvent CreateLogEvent(string text)
+        {
+            var msg = new MessageTemplate(text, Enumerable.Empty<MessageTemplateToken>());
+            return new LogEvent(DateTimeOffset.UtcNow, LogEventLevel.Debug, null, msg, Enumerable.Empty<LogEventProperty>());
+        }
+
+
+        
+        private const string DefaultConsoleOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
+        private static readonly LINQPadTheme DefaultTestTheme = DefaultThemes.LINQPadLiterate;
     }
 }

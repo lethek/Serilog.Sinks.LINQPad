@@ -45,7 +45,7 @@ namespace Serilog
         /// to be changed at runtime.</param>
         /// <param name="theme">The theme to apply to the styled output. If not specified,
         /// uses <see cref="LINQPadTheme.LINQPadLiterate"/> or if dark-mode is enabled <see cref="LINQPadTheme.LINQPadDark"/>.</param>
-        /// <param name="dumpContainer">optional write to a specified <see cref="DumpContainer"/> and not direct to the result panel</param>
+        /// <param name="dumpContainer">Optional write to a specified <see cref="DumpContainer"/> and not direct to the result panel.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration LINQPad(
             this LoggerSinkConfiguration sinkConfiguration,
@@ -81,7 +81,7 @@ namespace Serilog
         /// events passed through the sink. Ignored when <paramref name="levelSwitch"/> is specified.</param>
         /// <param name="levelSwitch">A switch allowing the pass-through minimum level
         /// to be changed at runtime.</param>
-        /// <param name="dumpContainer">optional write to a specified <see cref="DumpContainer"/> and not direct to the result panel</param>
+        /// <param name="dumpContainer">Optional write to a specified <see cref="DumpContainer"/> and not direct to the result panel.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration LINQPad(
             this LoggerSinkConfiguration sinkConfiguration,

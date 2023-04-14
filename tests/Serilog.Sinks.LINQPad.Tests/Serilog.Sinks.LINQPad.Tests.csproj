@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0;net48</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <RootNamespace>Serilog.Sinks.LINQPad</RootNamespace>
-    <OutputPath>bin\$(Configuration)</OutputPath>
+    <LangVersion>latest</LangVersion>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 

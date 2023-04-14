@@ -20,7 +20,6 @@ using Serilog.Sinks.LINQPad.Themes;
 using System;
 
 using LINQPad;
-using Serilog.Sinks.LINQPad.Output;
 using System.Collections.Generic;
 
 namespace Serilog.Sinks.LINQPad
@@ -45,7 +44,6 @@ namespace Serilog.Sinks.LINQPad
                 var rawHtml = Util.RawHtml($"<span style='white-space:pre-wrap'>{_writer}</span>");
 
                 if (_dumpContainer != null) {
-
 #if NETCOREAPP3_1_OR_GREATER
                     _dumpContainer.AppendContent(rawHtml);
 #elif NET48_OR_GREATER

@@ -24,6 +24,19 @@ Log.Logger = new LoggerConfiguration()
 
 Log events will be printed with color to the LINQPad results-panel.
 
+## Log to DumpContainer
+
+---
+
+Optionally log to a specified `DumpContainer`, when you don't want them directly appended to the result panel.
+
+```csharp
+DumpContainer logContainer = new DumpContainer().Dump("Log Messages");
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.LINQPad(dumpContainer: logContainer)
+    .CreateLogger();
+```
+
 ## Custom color schemes
 
 ---
@@ -108,23 +121,6 @@ The format of events to the console can be modified using the `outputTemplate` c
 The default template, shown in the example above, uses built-in properties like `Timestamp` and `Level`. Properties from events, including those attached using [enrichers](https://github.com/serilog/serilog/wiki/Enrichment), can also appear in the output template.
 
 For more compact level names, use a format such as `{Level:u3}` or `{Level:w3}` for three-character upper- or lowercase level names, respectively.
-
----
-
-## Log to DumpContainer
-
----
-
-Optional log to a specified `DumpContainer`.
-
-```csharp
-DumpContainer logContainer = new DumpContainer().Dump("Log Messages");
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.LINQPad(dumpContainer: logContainer)
-    .CreateLogger();
-```
-
-Writes the log messages to the specified `DumpContainer`, when not wanted directly appended to the result panel.
 
 ---
 
