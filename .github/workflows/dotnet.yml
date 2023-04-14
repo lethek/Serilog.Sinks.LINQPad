@@ -56,7 +56,7 @@ jobs:
           ${{ github.workspace }}/artifacts/*.nupkg
           ${{ github.workspace }}/artifacts/*.snupkg
 
-    - name: Push (Release)
+    - name: Push (Pre-release)
       env:
         MYGET_SOURCE: ${{ secrets.MYGET_SOURCE }}
       if: ${{ steps.gitversion.outputs.nuGetPreReleaseTag != '' && env.MYGET_SOURCE != '' }}
