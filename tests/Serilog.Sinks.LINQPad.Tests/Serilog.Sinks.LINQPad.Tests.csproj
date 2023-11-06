@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="LINQPad" Version="5.46.0" Condition="'$(TargetFramework)' == 'net48'" />
+    <PackageReference Include="LINQPad.Runtime" Version="7.7.15" Condition="'$(TargetFramework)' == 'net6.0'" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
     <PackageReference Include="xunit" Version="2.5.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">

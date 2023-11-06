@@ -49,7 +49,6 @@ namespace Serilog.Sinks.LINQPad
             return new LogEvent(DateTimeOffset.UtcNow, LogEventLevel.Debug, null, msg, Enumerable.Empty<LogEventProperty>());
         }
 
-
         
         private const string DefaultConsoleOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
         private static readonly LINQPadTheme DefaultTestTheme = DefaultThemes.LINQPadLiterate;
