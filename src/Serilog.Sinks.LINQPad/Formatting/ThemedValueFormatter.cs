@@ -19,25 +19,24 @@ using Serilog.Data;
 using Serilog.Events;
 using Serilog.Sinks.LINQPad.Themes;
 
-namespace Serilog.Sinks.LINQPad.Formatting
+namespace Serilog.Sinks.LINQPad.Formatting;
+
+internal abstract class ThemedValueFormatter : LogEventPropertyValueVisitor<ThemedValueFormatterState, int>
 {
-    internal abstract class ThemedValueFormatter : LogEventPropertyValueVisitor<ThemedValueFormatterState, int>
-    {
-        protected ThemedValueFormatter(ConsoleTheme theme)
-            => _theme = theme ?? throw new ArgumentNullException(nameof(theme));
+    protected ThemedValueFormatter(ConsoleTheme theme)
+        => _theme = theme ?? throw new ArgumentNullException(nameof(theme));
 
 
-        protected StyleReset ApplyStyle(TextWriter output, ConsoleThemeStyle style, ref int invisibleCharacterCount)
-            => _theme.Apply(output, style, ref invisibleCharacterCount);
+    protected StyleReset ApplyStyle(TextWriter output, ConsoleThemeStyle style, ref int invisibleCharacterCount)
+        => _theme.Apply(output, style, ref invisibleCharacterCount);
 
 
-        public int Format(LogEventPropertyValue value, TextWriter output, string format, bool literalTopLevel = false)
-            => Visit(new ThemedValueFormatterState { Output = output, Format = format, IsTopLevel = literalTopLevel }, value);
+    public int Format(LogEventPropertyValue value, TextWriter output, string format, bool literalTopLevel = false)
+        => Visit(new ThemedValueFormatterState { Output = output, Format = format, IsTopLevel = literalTopLevel }, value);
 
 
-        public abstract ThemedValueFormatter SwitchTheme(ConsoleTheme theme);
+    public abstract ThemedValueFormatter SwitchTheme(ConsoleTheme theme);
 
 
-        private readonly ConsoleTheme _theme;
-    }
+    private readonly ConsoleTheme _theme;
 }

@@ -20,22 +20,21 @@ using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Rendering;
 
 
-namespace Serilog.Sinks.LINQPad.Output
+namespace Serilog.Sinks.LINQPad.Output;
+
+internal class NewLineTokenRenderer : OutputTemplateTokenRenderer
 {
-    internal class NewLineTokenRenderer : OutputTemplateTokenRenderer
+    private readonly Alignment? _alignment;
+
+    public NewLineTokenRenderer(Alignment? alignment)
+        => _alignment = alignment;
+
+    public override void Render(LogEvent logEvent, TextWriter output)
     {
-        private readonly Alignment? _alignment;
-
-        public NewLineTokenRenderer(Alignment? alignment)
-            => _alignment = alignment;
-
-        public override void Render(LogEvent logEvent, TextWriter output)
-        {
-            if (_alignment.HasValue) {
-                Padding.Apply(output, Environment.NewLine, _alignment.Value.Widen(Environment.NewLine.Length));
-            } else {
-                output.WriteLine();
-            }
+        if (_alignment.HasValue) {
+            Padding.Apply(output, Environment.NewLine, _alignment.Value.Widen(Environment.NewLine.Length));
+        } else {
+            output.WriteLine();
         }
     }
 }

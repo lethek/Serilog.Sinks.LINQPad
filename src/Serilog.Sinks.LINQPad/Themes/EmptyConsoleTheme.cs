@@ -15,20 +15,18 @@
 using System.IO;
 
 
-namespace Serilog.Sinks.LINQPad.Themes
+namespace Serilog.Sinks.LINQPad.Themes;
+
+internal class EmptyConsoleTheme : ConsoleTheme
 {
-    internal class EmptyConsoleTheme : ConsoleTheme
-    {
-        public override bool CanBuffer => true;
+    public override bool CanBuffer => true;
 
-        protected override int ResetCharCount { get; }
+    protected override int ResetCharCount { get; }
 
-        public override int Set(TextWriter output, ConsoleThemeStyle style)
-            => 0;
+    public override int Set(TextWriter output, ConsoleThemeStyle style)
+        => 0;
 
-        public override void Reset(TextWriter output) { }
+    public override void Reset(TextWriter output) { }
 
-        public override void ApplyColors(TextWriter output) { }
-    }
-
+    public override void ApplyColors(TextWriter output) { }
 }

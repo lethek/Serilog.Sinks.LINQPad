@@ -19,78 +19,75 @@ using System.IO;
 using System.Linq;
 
 
-namespace Serilog.Sinks.LINQPad.Themes
+namespace Serilog.Sinks.LINQPad.Themes;
+
+public class LINQPadTheme : ConsoleTheme
 {
-
-    public class LINQPadTheme : ConsoleTheme
+    /// <summary>
+    /// Construct a theme given a set of styles.
+    /// </summary>
+    /// <param name="styles">Styles to apply within the theme.</param>
+    public LINQPadTheme(IReadOnlyDictionary<ConsoleThemeStyle, LINQPadThemeStyle> styles)
     {
-        /// <summary>
-        /// Construct a theme given a set of styles.
-        /// </summary>
-        /// <param name="styles">Styles to apply within the theme.</param>
-        public LINQPadTheme(IReadOnlyDictionary<ConsoleThemeStyle, LINQPadThemeStyle> styles)
-        {
-            if (styles == null) {
-                throw new ArgumentNullException(nameof(styles));
-            }
-
-            Styles = styles.ToDictionary(kv => kv.Key, kv => kv.Value);
+        if (styles == null) {
+            throw new ArgumentNullException(nameof(styles));
         }
 
-
-        /// <inheritdoc/>
-        public IReadOnlyDictionary<ConsoleThemeStyle, LINQPadThemeStyle> Styles { get; }
-
-        /// <inheritdoc/>
-        public override bool CanBuffer => false;
-
-        /// <inheritdoc/>
-        protected override int ResetCharCount { get; }
-
-
-        /// <inheritdoc/>
-        public override int Set(TextWriter output, ConsoleThemeStyle style)
-        {
-            if (Styles.TryGetValue(style, out var wcts)) {
-                NextColors = wcts;
-            }
-
-            return 0;
-        }
-
-
-        /// <inheritdoc/>
-        public override void Reset(TextWriter output)
-            => NextColors = LINQPadThemeStyle.None;
-
-
-        public override void ApplyColors(TextWriter output)
-        {
-            if (!CurrColors.Equals(NextColors)) {
-                if (SpanDepth > 0) {
-                    output.Write("</span>");
-                    SpanDepth--;
-                }
-
-                var declarations = new[] {
-                    NextColors.Foreground.HasValue ? $"color:{ColorTranslator.ToHtml(NextColors.Foreground.Value)}" : null,
-                    NextColors.Background.HasValue ? $"background-color:{ColorTranslator.ToHtml(NextColors.Background.Value)}" : null,
-                    NextColors.Bold ? "font-weight:bold" : null,
-                    NextColors.Italic ? "font-style:italic" : null
-                };
-                var style = String.Join("; ", declarations.Where(x => x != null));
-                if (style.Length > 0) {
-                    output.Write($"<span style='{style}'>");
-                    CurrColors = NextColors;
-                    SpanDepth++;
-                }
-            }
-        }
-
-
-        protected LINQPadThemeStyle CurrColors;
-        protected LINQPadThemeStyle NextColors;
-        protected int SpanDepth = 0;
+        Styles = styles.ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<ConsoleThemeStyle, LINQPadThemeStyle> Styles { get; }
+
+    /// <inheritdoc/>
+    public override bool CanBuffer => false;
+
+    /// <inheritdoc/>
+    protected override int ResetCharCount { get; }
+
+
+    /// <inheritdoc/>
+    public override int Set(TextWriter output, ConsoleThemeStyle style)
+    {
+        if (Styles.TryGetValue(style, out var wcts)) {
+            NextColors = wcts;
+        }
+
+        return 0;
+    }
+
+
+    /// <inheritdoc/>
+    public override void Reset(TextWriter output)
+        => NextColors = LINQPadThemeStyle.None;
+
+
+    public override void ApplyColors(TextWriter output)
+    {
+        if (!CurrColors.Equals(NextColors)) {
+            if (SpanDepth > 0) {
+                output.Write("</span>");
+                SpanDepth--;
+            }
+
+            var declarations = new[] {
+                NextColors.Foreground.HasValue ? $"color:{ColorTranslator.ToHtml(NextColors.Foreground.Value)}" : null,
+                NextColors.Background.HasValue ? $"background-color:{ColorTranslator.ToHtml(NextColors.Background.Value)}" : null,
+                NextColors.Bold ? "font-weight:bold" : null,
+                NextColors.Italic ? "font-style:italic" : null
+            };
+            var style = String.Join("; ", declarations.Where(x => x != null));
+            if (style.Length > 0) {
+                output.Write($"<span style='{style}'>");
+                CurrColors = NextColors;
+                SpanDepth++;
+            }
+        }
+    }
+
+
+    protected LINQPadThemeStyle CurrColors;
+    protected LINQPadThemeStyle NextColors;
+    protected int SpanDepth = 0;
 }

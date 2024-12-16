@@ -18,35 +18,34 @@ using Serilog.Events;
 using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Themes;
 
-namespace Serilog.Sinks.LINQPad.Output
+namespace Serilog.Sinks.LINQPad.Output;
+
+internal class ExceptionTokenRenderer : OutputTemplateTokenRenderer
 {
-    internal class ExceptionTokenRenderer : OutputTemplateTokenRenderer
+    public ExceptionTokenRenderer(ConsoleTheme theme, PropertyToken pt)
+        => _theme = theme;
+
+
+    public override void Render(LogEvent logEvent, TextWriter output)
     {
-        public ExceptionTokenRenderer(ConsoleTheme theme, PropertyToken pt)
-            => _theme = theme;
+        // Padding is never applied by this renderer.
 
-
-        public override void Render(LogEvent logEvent, TextWriter output)
-        {
-            // Padding is never applied by this renderer.
-
-            if (logEvent.Exception == null) {
-                return;
-            }
-
-            var lines = new StringReader(logEvent.Exception.ToString());
-            string nextLine;
-            while ((nextLine = lines.ReadLine()) != null) {
-                var style = nextLine.StartsWith(StackFrameLinePrefix) ? ConsoleThemeStyle.SecondaryText : ConsoleThemeStyle.Text;
-                var _ = 0;
-                using (_theme.Apply(output, style, ref _)) {
-                    output.WriteLine(nextLine);
-                }
-            }
+        if (logEvent.Exception == null) {
+            return;
         }
 
-
-        private const string StackFrameLinePrefix = "   ";
-        private readonly ConsoleTheme _theme;
+        var lines = new StringReader(logEvent.Exception.ToString());
+        string nextLine;
+        while ((nextLine = lines.ReadLine()) != null) {
+            var style = nextLine.StartsWith(StackFrameLinePrefix) ? ConsoleThemeStyle.SecondaryText : ConsoleThemeStyle.Text;
+            var _ = 0;
+            using (_theme.Apply(output, style, ref _)) {
+                output.WriteLine(nextLine);
+            }
+        }
     }
+
+
+    private const string StackFrameLinePrefix = "   ";
+    private readonly ConsoleTheme _theme;
 }

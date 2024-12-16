@@ -15,38 +15,35 @@
 using System.Drawing;
 
 
-namespace Serilog.Sinks.LINQPad.Themes
+namespace Serilog.Sinks.LINQPad.Themes;
+
+/// <summary>
+/// Styling applied using the <see cref="System.Drawing.Color"/> struct.
+/// </summary>
+public struct LINQPadThemeStyle
 {
+    /// <summary>
+    /// The foreground color to apply.
+    /// </summary>
+    public Color? Foreground;
 
     /// <summary>
-    /// Styling applied using the <see cref="System.Drawing.Color"/> struct.
+    /// The background color to apply.
     /// </summary>
-    public struct LINQPadThemeStyle
+    public Color? Background;
+
+    public bool Bold;
+    public bool Italic;
+
+
+    public LINQPadThemeStyle(Color? foreground = null, Color? background = null, bool? bold = null, bool? italic = null)
     {
-        /// <summary>
-        /// The foreground color to apply.
-        /// </summary>
-        public Color? Foreground;
-
-        /// <summary>
-        /// The background color to apply.
-        /// </summary>
-        public Color? Background;
-
-        public bool Bold;
-        public bool Italic;
-
-
-        public LINQPadThemeStyle(Color? foreground = null, Color? background = null, bool? bold = null, bool? italic = null)
-        {
-            Foreground = foreground;
-            Background = background;
-            Bold = bold.HasValue && bold.Value;
-            Italic = italic.HasValue && italic.Value;
-        }
-
-
-        public static readonly LINQPadThemeStyle None = new LINQPadThemeStyle();
+        Foreground = foreground;
+        Background = background;
+        Bold = bold.HasValue && bold.Value;
+        Italic = italic.HasValue && italic.Value;
     }
 
+
+    public static readonly LINQPadThemeStyle None = new LINQPadThemeStyle();
 }

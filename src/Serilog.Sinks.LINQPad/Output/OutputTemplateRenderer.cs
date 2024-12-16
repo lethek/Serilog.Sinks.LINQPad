@@ -23,72 +23,70 @@ using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Themes;
 
 
-namespace Serilog.Sinks.LINQPad.Output
+namespace Serilog.Sinks.LINQPad.Output;
+
+internal class OutputTemplateRenderer : ITextFormatter
 {
-    internal class OutputTemplateRenderer : ITextFormatter
+    private readonly OutputTemplateTokenRenderer[] _renderers;
+
+
+    public OutputTemplateRenderer(ConsoleTheme theme, string outputTemplate, IFormatProvider formatProvider)
     {
-        private readonly OutputTemplateTokenRenderer[] _renderers;
-
-
-        public OutputTemplateRenderer(ConsoleTheme theme, string outputTemplate, IFormatProvider formatProvider)
-        {
-            if (outputTemplate == null) {
-                throw new ArgumentNullException(nameof(outputTemplate));
-            }
-
-            var template = new MessageTemplateParser().Parse(outputTemplate);
-
-            var renderers = new List<OutputTemplateTokenRenderer>();
-            foreach (var token in template.Tokens) {
-                if (token is TextToken tt) {
-                    renderers.Add(new TextTokenRenderer(theme, tt.Text));
-                    continue;
-                }
-
-                var pt = (PropertyToken)token;
-                switch (pt.PropertyName) {
-                    case OutputProperties.LevelPropertyName:
-                        renderers.Add(new LevelTokenRenderer(theme, pt));
-                        break;
-                    case OutputProperties.NewLinePropertyName:
-                        renderers.Add(new NewLineTokenRenderer(pt.Alignment));
-                        break;
-                    case OutputProperties.ExceptionPropertyName:
-                        renderers.Add(new ExceptionTokenRenderer(theme, pt));
-                        break;
-                    case OutputProperties.MessagePropertyName:
-                        renderers.Add(new MessageTemplateOutputTokenRenderer(theme, pt, formatProvider));
-                        break;
-                    case OutputProperties.TimestampPropertyName:
-                        renderers.Add(new TimestampTokenRenderer(theme, pt, formatProvider));
-                        break;
-                    case "Properties":
-                        renderers.Add(new PropertiesTokenRenderer(theme, pt, template, formatProvider));
-                        break;
-                    default:
-                        renderers.Add(new EventPropertyTokenRenderer(theme, pt, formatProvider));
-                        break;
-                }
-            }
-
-            _renderers = renderers.ToArray();
+        if (outputTemplate == null) {
+            throw new ArgumentNullException(nameof(outputTemplate));
         }
 
+        var template = new MessageTemplateParser().Parse(outputTemplate);
 
-        public void Format(LogEvent logEvent, TextWriter output)
-        {
-            if (logEvent == null) {
-                throw new ArgumentNullException(nameof(logEvent));
+        var renderers = new List<OutputTemplateTokenRenderer>();
+        foreach (var token in template.Tokens) {
+            if (token is TextToken tt) {
+                renderers.Add(new TextTokenRenderer(theme, tt.Text));
+                continue;
             }
 
-            if (output == null) {
-                throw new ArgumentNullException(nameof(output));
-            }
-
-            foreach (var renderer in _renderers) {
-                renderer.Render(logEvent, output);
+            var pt = (PropertyToken)token;
+            switch (pt.PropertyName) {
+                case OutputProperties.LevelPropertyName:
+                    renderers.Add(new LevelTokenRenderer(theme, pt));
+                    break;
+                case OutputProperties.NewLinePropertyName:
+                    renderers.Add(new NewLineTokenRenderer(pt.Alignment));
+                    break;
+                case OutputProperties.ExceptionPropertyName:
+                    renderers.Add(new ExceptionTokenRenderer(theme, pt));
+                    break;
+                case OutputProperties.MessagePropertyName:
+                    renderers.Add(new MessageTemplateOutputTokenRenderer(theme, pt, formatProvider));
+                    break;
+                case OutputProperties.TimestampPropertyName:
+                    renderers.Add(new TimestampTokenRenderer(theme, pt, formatProvider));
+                    break;
+                case "Properties":
+                    renderers.Add(new PropertiesTokenRenderer(theme, pt, template, formatProvider));
+                    break;
+                default:
+                    renderers.Add(new EventPropertyTokenRenderer(theme, pt, formatProvider));
+                    break;
             }
         }
+
+        _renderers = renderers.ToArray();
     }
 
+
+    public void Format(LogEvent logEvent, TextWriter output)
+    {
+        if (logEvent == null) {
+            throw new ArgumentNullException(nameof(logEvent));
+        }
+
+        if (output == null) {
+            throw new ArgumentNullException(nameof(output));
+        }
+
+        foreach (var renderer in _renderers) {
+            renderer.Render(logEvent, output);
+        }
+    }
 }

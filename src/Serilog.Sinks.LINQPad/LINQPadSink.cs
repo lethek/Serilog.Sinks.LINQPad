@@ -21,64 +21,64 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Serilog.Sinks.LINQPad
+namespace Serilog.Sinks.LINQPad;
+
+internal class LINQPadSink : ILogEventSink, IDisposable
 {
-    internal class LINQPadSink : ILogEventSink, IDisposable
+    public LINQPadSink(ConsoleTheme theme, ITextFormatter formatter, object dumpContainer = null)
     {
-        public LINQPadSink(ConsoleTheme theme, ITextFormatter formatter, object dumpContainer = null)
-        {
-            _formatter = formatter;
-            _writer = new ThemedHtmlWriter(theme ?? throw new ArgumentNullException(nameof(theme)));
-            _dumpContainer = dumpContainer;
-            ReflectLINQPadRuntime();
+        _formatter = formatter;
+        _writer = new ThemedHtmlWriter(theme ?? throw new ArgumentNullException(nameof(theme)));
+        _dumpContainer = dumpContainer;
+        ReflectLINQPadRuntime();
+    }
+
+
+    public void Emit(LogEvent logEvent)
+    {
+        lock (SyncRoot) {
+            _formatter.Format(logEvent, _writer);
+            _dumpContent($"<span style='white-space:pre-wrap'>{_writer}</span>");
+            _writer.Clear();
         }
+    }
 
 
-        public void Emit(LogEvent logEvent)
-        {
-            lock (SyncRoot) {
-                _formatter.Format(logEvent, _writer);
-                _dumpContent($"<span style='white-space:pre-wrap'>{_writer}</span>");
-                _writer.Clear();
-            }
+    public void Dispose()
+    {
+        if (!_disposed) {
+            _writer.Dispose();
+            _disposed = true;
         }
+    }
 
 
-        public void Dispose()
-        {
-            if (!_disposed) {
-                _writer.Dispose();
-                _disposed = true;
-            }
-        }
-
-
-        private void ReflectLINQPadRuntime()
-        {
+    private void ReflectLINQPadRuntime()
+    {
 #if NETCOREAPP3_1_OR_GREATER
-            var utilType = Type.GetType("LINQPad.Util, LINQPad.Runtime");
-            var rawHtmlMethod = utilType!.GetMethod("RawHtml", new[] { typeof(string) });
-            var rawHtmlFunc = (Func<string, object>)rawHtmlMethod!.CreateDelegate(typeof(Func<string, object>));
+        var utilType = Type.GetType("LINQPad.Util, LINQPad.Runtime");
+        var rawHtmlMethod = utilType!.GetMethod("RawHtml", new[] { typeof(string) });
+        var rawHtmlFunc = (Func<string, object>)rawHtmlMethod!.CreateDelegate(typeof(Func<string, object>));
 
-            if (_dumpContainer != null) {
-                var dumpContainerType = Type.GetType("LINQPad.DumpContainer, LINQPad.Runtime");
-                if (!_dumpContainer.GetType().IsAssignableFrom(dumpContainerType)) {
-                    throw new ArgumentException($"The specified dumpContainer must be of type {dumpContainerType.FullName}", nameof(_dumpContainer));
-                }
-                var appendContentMethod = dumpContainerType
-                    !.GetMethod("AppendContent", 1, new[] { Type.MakeGenericMethodParameter(0), typeof(bool) })
-                    !.MakeGenericMethod(typeof(object));
-                var appendContentFunc = (Func<object, bool, object>)appendContentMethod.CreateDelegate(typeof(Func<object, bool, object>), _dumpContainer);
-                _dumpContent = o => appendContentFunc(rawHtmlFunc(o), false);
-                
-            } else {
-                var extensionsType = Type.GetType("LINQPad.Extensions, LINQPad.Runtime");
-                var dumpMethod = extensionsType
-                    !.GetMethod("Dump", 1, new[] { Type.MakeGenericMethodParameter(0) })
-                    !.MakeGenericMethod(typeof(object));
-                var dumpFunc = (Func<object, object>)dumpMethod.CreateDelegate(typeof(Func<object, object>));
-                _dumpContent = o => dumpFunc(rawHtmlFunc(o));
+        if (_dumpContainer != null) {
+            var dumpContainerType = Type.GetType("LINQPad.DumpContainer, LINQPad.Runtime");
+            if (!_dumpContainer.GetType().IsAssignableFrom(dumpContainerType)) {
+                throw new ArgumentException($"The specified dumpContainer must be of type {dumpContainerType.FullName}", nameof(_dumpContainer));
             }
+            var appendContentMethod = dumpContainerType
+                !.GetMethod("AppendContent", 1, new[] { Type.MakeGenericMethodParameter(0), typeof(bool) })
+                !.MakeGenericMethod(typeof(object));
+            var appendContentFunc = (Func<object, bool, object>)appendContentMethod.CreateDelegate(typeof(Func<object, bool, object>), _dumpContainer);
+            _dumpContent = o => appendContentFunc(rawHtmlFunc(o), false);
+
+        } else {
+            var extensionsType = Type.GetType("LINQPad.Extensions, LINQPad.Runtime");
+            var dumpMethod = extensionsType
+                !.GetMethod("Dump", 1, new[] { Type.MakeGenericMethodParameter(0) })
+                !.MakeGenericMethod(typeof(object));
+            var dumpFunc = (Func<object, object>)dumpMethod.CreateDelegate(typeof(Func<object, object>));
+            _dumpContent = o => dumpFunc(rawHtmlFunc(o));
+        }
 
 #elif NET48_OR_GREATER
             var utilType = Type.GetType("LINQPad.Util, LINQPad");
@@ -112,20 +112,19 @@ namespace Serilog.Sinks.LINQPad
                 _dumpContent = o => dumpFunc(rawHtmlFunc(o));
             }
 #endif
-        }
+    }
 
 
-        private bool _disposed;
-        private Action<string> _dumpContent;
+    private bool _disposed;
+    private Action<string> _dumpContent;
 
-        private readonly ITextFormatter _formatter;
-        private readonly ThemedHtmlWriter _writer;
-        private readonly object _dumpContainer;
+    private readonly ITextFormatter _formatter;
+    private readonly ThemedHtmlWriter _writer;
+    private readonly object _dumpContainer;
 
 #if NET48_OR_GREATER
         private readonly List<object> _content = new();
 #endif
 
-        private static readonly object SyncRoot = new();
-    }
+    private static readonly object SyncRoot = new();
 }

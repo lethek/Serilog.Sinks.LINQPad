@@ -16,10 +16,9 @@ using System.IO;
 
 using Serilog.Events;
 
-namespace Serilog.Sinks.LINQPad.Output
+namespace Serilog.Sinks.LINQPad.Output;
+
+internal abstract class OutputTemplateTokenRenderer
 {
-    internal abstract class OutputTemplateTokenRenderer
-    {
-        public abstract void Render(LogEvent logEvent, TextWriter output);
-    }
+    public abstract void Render(LogEvent logEvent, TextWriter output);
 }

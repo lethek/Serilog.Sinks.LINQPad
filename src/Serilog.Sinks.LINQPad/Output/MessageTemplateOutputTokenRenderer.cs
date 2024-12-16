@@ -20,48 +20,47 @@ using Serilog.Sinks.LINQPad.Rendering;
 using Serilog.Sinks.LINQPad.Formatting;
 using Serilog.Sinks.LINQPad.Themes;
 
-namespace Serilog.Sinks.LINQPad.Output
+namespace Serilog.Sinks.LINQPad.Output;
+
+internal class MessageTemplateOutputTokenRenderer : OutputTemplateTokenRenderer
 {
-    internal class MessageTemplateOutputTokenRenderer : OutputTemplateTokenRenderer
+    private readonly ConsoleTheme _theme;
+    private readonly PropertyToken _token;
+    private readonly ThemedMessageTemplateRenderer _renderer;
+
+    public MessageTemplateOutputTokenRenderer(ConsoleTheme theme, PropertyToken token, IFormatProvider formatProvider)
     {
-        private readonly ConsoleTheme _theme;
-        private readonly PropertyToken _token;
-        private readonly ThemedMessageTemplateRenderer _renderer;
+        _theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        _token = token ?? throw new ArgumentNullException(nameof(token));
+        bool isLiteral = false, isJson = false;
 
-        public MessageTemplateOutputTokenRenderer(ConsoleTheme theme, PropertyToken token, IFormatProvider formatProvider)
-        {
-            _theme = theme ?? throw new ArgumentNullException(nameof(theme));
-            _token = token ?? throw new ArgumentNullException(nameof(token));
-            bool isLiteral = false, isJson = false;
-
-            if (token.Format != null) {
-                for (var i = 0; i < token.Format.Length; ++i) {
-                    if (token.Format[i] == 'l') {
-                        isLiteral = true;
-                    } else if (token.Format[i] == 'j') {
-                        isJson = true;
-                    }
+        if (token.Format != null) {
+            for (var i = 0; i < token.Format.Length; ++i) {
+                if (token.Format[i] == 'l') {
+                    isLiteral = true;
+                } else if (token.Format[i] == 'j') {
+                    isJson = true;
                 }
             }
-
-            var valueFormatter = isJson
-                ? (ThemedValueFormatter)new ThemedJsonValueFormatter(theme, formatProvider)
-                : new ThemedDisplayValueFormatter(theme, formatProvider);
-
-            _renderer = new ThemedMessageTemplateRenderer(theme, valueFormatter, isLiteral);
         }
 
-        public override void Render(LogEvent logEvent, TextWriter output)
-        {
-            if (_token.Alignment == null || !_theme.CanBuffer) {
-                _renderer.Render(logEvent.MessageTemplate, logEvent.Properties, output);
-                return;
-            }
+        var valueFormatter = isJson
+            ? (ThemedValueFormatter)new ThemedJsonValueFormatter(theme, formatProvider)
+            : new ThemedDisplayValueFormatter(theme, formatProvider);
 
-            var buffer = new StringWriter();
-            var invisible = _renderer.Render(logEvent.MessageTemplate, logEvent.Properties, buffer);
-            var value = buffer.ToString();
-            Padding.Apply(output, value, _token.Alignment.Value.Widen(invisible));
+        _renderer = new ThemedMessageTemplateRenderer(theme, valueFormatter, isLiteral);
+    }
+
+    public override void Render(LogEvent logEvent, TextWriter output)
+    {
+        if (_token.Alignment == null || !_theme.CanBuffer) {
+            _renderer.Render(logEvent.MessageTemplate, logEvent.Properties, output);
+            return;
         }
+
+        var buffer = new StringWriter();
+        var invisible = _renderer.Render(logEvent.MessageTemplate, logEvent.Properties, buffer);
+        var value = buffer.ToString();
+        Padding.Apply(output, value, _token.Alignment.Value.Widen(invisible));
     }
 }
