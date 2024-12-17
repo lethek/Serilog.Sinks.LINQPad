@@ -17,6 +17,14 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          3.1.x
+          6.x
+          8.x
+
     - name: Setup GitVersion
       uses: gittools/actions/gitversion/setup@v3.1.1
       with:
@@ -27,14 +35,6 @@ jobs:
       id: gitversion
       with:
         useConfigFile: true
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          3.1.x
-          6.x
-          8.x
 
     - name: Restore
       run: dotnet restore
