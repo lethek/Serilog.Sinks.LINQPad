@@ -24,10 +24,6 @@ namespace Serilog.Sinks.LINQPad.Output;
 
 internal class MessageTemplateOutputTokenRenderer : OutputTemplateTokenRenderer
 {
-    private readonly ConsoleTheme _theme;
-    private readonly PropertyToken _token;
-    private readonly ThemedMessageTemplateRenderer _renderer;
-
     public MessageTemplateOutputTokenRenderer(ConsoleTheme theme, PropertyToken token, IFormatProvider formatProvider)
     {
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
@@ -35,10 +31,11 @@ internal class MessageTemplateOutputTokenRenderer : OutputTemplateTokenRenderer
         bool isLiteral = false, isJson = false;
 
         if (token.Format != null) {
-            for (var i = 0; i < token.Format.Length; ++i) {
-                if (token.Format[i] == 'l') {
+            foreach (var t in token.Format)
+            {
+                if (t == 'l') {
                     isLiteral = true;
-                } else if (token.Format[i] == 'j') {
+                } else if (t == 'j') {
                     isJson = true;
                 }
             }
@@ -51,6 +48,7 @@ internal class MessageTemplateOutputTokenRenderer : OutputTemplateTokenRenderer
         _renderer = new ThemedMessageTemplateRenderer(theme, valueFormatter, isLiteral);
     }
 
+    
     public override void Render(LogEvent logEvent, TextWriter output)
     {
         if (_token.Alignment == null || !_theme.CanBuffer) {
@@ -58,9 +56,14 @@ internal class MessageTemplateOutputTokenRenderer : OutputTemplateTokenRenderer
             return;
         }
 
-        var buffer = new StringWriter();
+        using var buffer = new StringWriter();
         var invisible = _renderer.Render(logEvent.MessageTemplate, logEvent.Properties, buffer);
         var value = buffer.ToString();
         Padding.Apply(output, value, _token.Alignment.Value.Widen(invisible));
     }
+    
+    
+    private readonly ConsoleTheme _theme;
+    private readonly PropertyToken _token;
+    private readonly ThemedMessageTemplateRenderer _renderer;
 }

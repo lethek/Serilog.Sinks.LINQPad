@@ -21,12 +21,9 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Formatting;
 
-internal abstract class ThemedValueFormatter : LogEventPropertyValueVisitor<ThemedValueFormatterState, int>
+internal abstract class ThemedValueFormatter(ConsoleTheme theme)
+    : LogEventPropertyValueVisitor<ThemedValueFormatterState, int>
 {
-    protected ThemedValueFormatter(ConsoleTheme theme)
-        => _theme = theme ?? throw new ArgumentNullException(nameof(theme));
-
-
     protected StyleReset ApplyStyle(TextWriter output, ConsoleThemeStyle style, ref int invisibleCharacterCount)
         => _theme.Apply(output, style, ref invisibleCharacterCount);
 
@@ -38,5 +35,5 @@ internal abstract class ThemedValueFormatter : LogEventPropertyValueVisitor<Them
     public abstract ThemedValueFormatter SwitchTheme(ConsoleTheme theme);
 
 
-    private readonly ConsoleTheme _theme;
+    private readonly ConsoleTheme _theme = theme ?? throw new ArgumentNullException(nameof(theme));
 }

@@ -22,19 +22,11 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Formatting;
 
-internal class ThemedJsonValueFormatter : ThemedValueFormatter
+internal class ThemedJsonValueFormatter(ConsoleTheme theme, IFormatProvider formatProvider)
+    : ThemedValueFormatter(theme)
 {
-
-    public ThemedJsonValueFormatter(ConsoleTheme theme, IFormatProvider formatProvider)
-        : base(theme)
-    {
-        _displayFormatter = new ThemedDisplayValueFormatter(theme, formatProvider);
-        _formatProvider = formatProvider;
-    }
-
-
     public override ThemedValueFormatter SwitchTheme(ConsoleTheme theme)
-        => new ThemedJsonValueFormatter(theme, _formatProvider);
+        => new ThemedJsonValueFormatter(theme, formatProvider);
 
 
     protected override int VisitScalarValue(ThemedValueFormatterState state, ScalarValue scalar)
@@ -65,7 +57,8 @@ internal class ThemedJsonValueFormatter : ThemedValueFormatter
         }
 
         var delim = String.Empty;
-        for (var index = 0; index < sequence.Elements.Count; ++index) {
+        foreach (var element in sequence.Elements)
+        {
             if (delim.Length != 0) {
                 using (ApplyStyle(state.Output, ConsoleThemeStyle.TertiaryText, ref count)) {
                     state.Output.Write(delim);
@@ -73,7 +66,7 @@ internal class ThemedJsonValueFormatter : ThemedValueFormatter
             }
 
             delim = ", ";
-            Visit(state.Nest(), sequence.Elements[index]);
+            Visit(state.Nest(), element);
         }
 
         using (ApplyStyle(state.Output, ConsoleThemeStyle.TertiaryText, ref count)) {
@@ -93,7 +86,8 @@ internal class ThemedJsonValueFormatter : ThemedValueFormatter
         }
 
         var delim = String.Empty;
-        for (var index = 0; index < structure.Properties.Count; ++index) {
+        foreach (var property in structure.Properties)
+        {
             if (delim.Length != 0) {
                 using (ApplyStyle(state.Output, ConsoleThemeStyle.TertiaryText, ref count)) {
                     state.Output.Write(delim);
@@ -101,8 +95,6 @@ internal class ThemedJsonValueFormatter : ThemedValueFormatter
             }
 
             delim = ", ";
-
-            var property = structure.Properties[index];
 
             using (ApplyStyle(state.Output, ConsoleThemeStyle.Name, ref count)) {
                 JsonValueFormatter.WriteQuotedJsonString(property.Name, state.Output);
@@ -183,6 +175,7 @@ internal class ThemedJsonValueFormatter : ThemedValueFormatter
         return count;
     }
 
+    
     private int FormatLiteralValue(ScalarValue scalar, TextWriter output)
     {
         var value = scalar.Value;
@@ -268,6 +261,5 @@ internal class ThemedJsonValueFormatter : ThemedValueFormatter
     }
 
 
-    private readonly ThemedDisplayValueFormatter _displayFormatter;
-    private readonly IFormatProvider _formatProvider;
+    private readonly ThemedDisplayValueFormatter _displayFormatter = new(theme, formatProvider);
 }

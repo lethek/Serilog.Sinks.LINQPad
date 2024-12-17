@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Serilog.Events;
+﻿using Serilog.Events;
 using Serilog.Sinks.LINQPad.Themes;
 using Xunit;
 
@@ -18,8 +15,8 @@ public class ThemedJsonValueFormatterTests
 
         public string Format(object literal)
         {
-            var output = new StringWriter();
-            Format(new SequenceValue(new[] { new ScalarValue(literal) }), output, null);
+            using var output = new StringWriter();
+            Format(new SequenceValue([new ScalarValue(literal)]), output, null);
             var o = output.ToString();
             return o.Substring(1, o.Length - 2);
         }
@@ -98,14 +95,14 @@ public class ThemedJsonValueFormatterTests
     [Fact]
     public void SequencePropertiesFormatAsArrayValue()
     {
-        var f = Format(new SequenceValue(new[] { new ScalarValue(123), new ScalarValue(456) }));
+        var f = Format(new SequenceValue([new ScalarValue(123), new ScalarValue(456)]));
         Assert.Equal("[123, 456]", f);
     }
 
     [Fact]
     public void StructuresFormatAsAnObject()
     {
-        var structure = new StructureValue(new[] { new LogEventProperty("A", new ScalarValue(123)) }, "T");
+        var structure = new StructureValue([new LogEventProperty("A", new ScalarValue(123))], "T");
         var f = Format(structure);
         Assert.Equal("{\"A\": 123, \"$type\": \"T\"}", f);
     }
@@ -125,7 +122,7 @@ public class ThemedJsonValueFormatterTests
     [Fact]
     public void SequencesOfSequencesAreFormatted()
     {
-        var s = new SequenceValue(new[] { new SequenceValue(new[] { new ScalarValue("Hello") }) });
+        var s = new SequenceValue([new SequenceValue([new ScalarValue("Hello")])]);
 
         var f = Format(s);
         Assert.Equal("[[\"Hello\"]]", f);

@@ -63,7 +63,7 @@ internal class ThemedHtmlWriter : TextWriter
 
     private readonly ConsoleTheme _theme;
     private readonly StringWriter _writer;
-    private readonly StringBuilder _builder = new StringBuilder(DefaultWriteBufferCapacity);
+    private readonly StringBuilder _builder = new(DefaultWriteBufferCapacity);
 
 
     private const int DefaultWriteBufferCapacity = 360;

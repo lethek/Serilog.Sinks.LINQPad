@@ -35,8 +35,7 @@ internal class ExceptionTokenRenderer : OutputTemplateTokenRenderer
         }
 
         var lines = new StringReader(logEvent.Exception.ToString());
-        string nextLine;
-        while ((nextLine = lines.ReadLine()) != null) {
+        while (lines.ReadLine() is { } nextLine) {
             var style = nextLine.StartsWith(StackFrameLinePrefix) ? ConsoleThemeStyle.SecondaryText : ConsoleThemeStyle.Text;
             var _ = 0;
             using (_theme.Apply(output, style, ref _)) {

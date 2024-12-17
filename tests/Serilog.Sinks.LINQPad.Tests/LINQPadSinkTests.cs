@@ -1,10 +1,6 @@
-using System;
-using System.Linq;
-
 using LP = LINQPad;
 
 using Serilog.Events;
-using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Output;
 using Serilog.Sinks.LINQPad.Themes;
 
@@ -18,7 +14,7 @@ public class LINQPadSinkTests
     public void EmitToOutputHasNoExceptions()
     {
         var formatter = new OutputTemplateRenderer(DefaultTestTheme, DefaultConsoleOutputTemplate, null);
-        var sink = new LINQPadSink(DefaultTestTheme, formatter);
+        using var sink = new LINQPadSink(DefaultTestTheme, formatter);
 
         sink.Emit(CreateLogEvent("Hello LINQPad"));
 
@@ -35,7 +31,7 @@ public class LINQPadSinkTests
         dcLogger.ContentChanged += (s, e) => contentChanged = true;
 
         var formatter = new OutputTemplateRenderer(DefaultTestTheme, DefaultConsoleOutputTemplate, null);
-        var sink = new LINQPadSink(DefaultTestTheme, formatter, dcLogger);
+        using var sink = new LINQPadSink(DefaultTestTheme, formatter, dcLogger);
 
         sink.Emit(CreateLogEvent("Hello LINQPad"));
 
@@ -45,8 +41,8 @@ public class LINQPadSinkTests
 
     private static LogEvent CreateLogEvent(string text)
     {
-        var msg = new MessageTemplate(text, Enumerable.Empty<MessageTemplateToken>());
-        return new LogEvent(DateTimeOffset.UtcNow, LogEventLevel.Debug, null, msg, Enumerable.Empty<LogEventProperty>());
+        var msg = new MessageTemplate(text, []);
+        return new LogEvent(DateTimeOffset.UtcNow, LogEventLevel.Debug, null, msg, []);
     }
 
         

@@ -1,10 +1,6 @@
 ﻿using Serilog.Sinks.LINQPad.Formatting;
-using Serilog.Sinks.LINQPad.Rendering;
 using Serilog.Sinks.LINQPad.Themes;
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -17,7 +13,7 @@ public class ThemedMessageTemplateRendererTests
         // ReSharper disable UnusedMember.Local
         public string Back => "straight";
 
-        public int[] Legs => new[] { 1, 2, 3, 4 };
+        public int[] Legs => [1, 2, 3, 4];
 
         // ReSharper restore UnusedMember.Local
         public override string ToString() => "a chair";
@@ -121,12 +117,13 @@ public class ThemedMessageTemplateRendererTests
         return Render(null, messageTemplate, properties);
     }
 
-    private static string Render(IFormatProvider formatProvider, string messageTemplate, params object[] properties)
+    private static string Render(IFormatProvider? formatProvider, string messageTemplate, params object[] properties)
     {
         var binder = new LoggerConfiguration().CreateLogger();
+        // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
         binder.BindMessageTemplate(messageTemplate, properties, out var mt, out var props);
         var output = new StringBuilder();
-        var writer = new StringWriter(output);
+        using var writer = new StringWriter(output);
         var renderer = new ThemedMessageTemplateRenderer(DefaultThemes.None,
             new ThemedDisplayValueFormatter(DefaultThemes.None, formatProvider), false);
         renderer.Render(mt, props.ToDictionary(p => p.Name, p => p.Value), writer);

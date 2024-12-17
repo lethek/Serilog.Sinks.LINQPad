@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 using Serilog.Sinks.LINQPad.Themes;
 
 
@@ -25,9 +22,7 @@ internal class TracingConsoleTheme : ConsoleTheme
 
 
     public override void Reset(TextWriter output)
-    {
-        output.Write(End);
-    }
+        => output.Write(End);
 
 
     public override void ApplyColors(TextWriter output)

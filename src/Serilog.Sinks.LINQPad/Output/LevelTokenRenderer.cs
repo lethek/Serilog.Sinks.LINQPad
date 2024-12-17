@@ -22,12 +22,23 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output;
 
-internal class LevelTokenRenderer : OutputTemplateTokenRenderer
+internal class LevelTokenRenderer(ConsoleTheme theme, PropertyToken levelToken) : OutputTemplateTokenRenderer
 {
-    private readonly ConsoleTheme _theme;
-    private readonly PropertyToken _levelToken;
-    private static readonly Dictionary<LogEventLevel, ConsoleThemeStyle> Levels = new Dictionary<LogEventLevel, ConsoleThemeStyle>
+    public override void Render(LogEvent logEvent, TextWriter output)
     {
+        var moniker = LevelOutputFormat.GetLevelMoniker(logEvent.Level, levelToken.Format);
+        if (!Levels.TryGetValue(logEvent.Level, out var levelStyle)) {
+            levelStyle = ConsoleThemeStyle.Invalid;
+        }
+
+        var _ = 0;
+        using (theme.Apply(output, levelStyle, ref _)) {
+            Padding.Apply(output, moniker, levelToken.Alignment);
+        }
+    }
+    
+    
+    private static readonly Dictionary<LogEventLevel, ConsoleThemeStyle> Levels = new() {
         { LogEventLevel.Verbose, ConsoleThemeStyle.LevelVerbose },
         { LogEventLevel.Debug, ConsoleThemeStyle.LevelDebug },
         { LogEventLevel.Information, ConsoleThemeStyle.LevelInformation },
@@ -35,27 +46,4 @@ internal class LevelTokenRenderer : OutputTemplateTokenRenderer
         { LogEventLevel.Error, ConsoleThemeStyle.LevelError },
         { LogEventLevel.Fatal, ConsoleThemeStyle.LevelFatal },
     };
-
-    public LevelTokenRenderer(ConsoleTheme theme, PropertyToken levelToken)
-    {
-        _theme = theme;
-        _levelToken = levelToken;
-    }
-
-    protected LevelTokenRenderer()
-    {
-    }
-
-    public override void Render(LogEvent logEvent, TextWriter output)
-    {
-        var moniker = LevelOutputFormat.GetLevelMoniker(logEvent.Level, _levelToken.Format);
-        if (!Levels.TryGetValue(logEvent.Level, out var levelStyle)) {
-            levelStyle = ConsoleThemeStyle.Invalid;
-        }
-
-        var _ = 0;
-        using (_theme.Apply(output, levelStyle, ref _)) {
-            Padding.Apply(output, moniker, _levelToken.Alignment);
-        }
-    }
 }

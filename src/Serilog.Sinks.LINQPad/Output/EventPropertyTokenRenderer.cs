@@ -22,43 +22,33 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Output;
 
-internal class EventPropertyTokenRenderer : OutputTemplateTokenRenderer
+internal class EventPropertyTokenRenderer(ConsoleTheme theme, PropertyToken token, IFormatProvider formatProvider)
+    : OutputTemplateTokenRenderer
 {
-    private readonly ConsoleTheme _theme;
-    private readonly PropertyToken _token;
-    private readonly IFormatProvider _formatProvider;
-
-    public EventPropertyTokenRenderer(ConsoleTheme theme, PropertyToken token, IFormatProvider formatProvider)
-    {
-        _theme = theme;
-        _token = token;
-        _formatProvider = formatProvider;
-    }
-
     public override void Render(LogEvent logEvent, TextWriter output)
     {
         // If a property is missing, don't render anything (message templates render the raw token here).
-        if (!logEvent.Properties.TryGetValue(_token.PropertyName, out var propertyValue)) {
-            Padding.Apply(output, String.Empty, _token.Alignment);
+        if (!logEvent.Properties.TryGetValue(token.PropertyName, out var propertyValue)) {
+            Padding.Apply(output, String.Empty, token.Alignment);
             return;
         }
 
         var _ = 0;
-        using (_theme.Apply(output, ConsoleThemeStyle.SecondaryText, ref _)) {
-            var writer = _token.Alignment.HasValue ? new StringWriter() : output;
+        using (theme.Apply(output, ConsoleThemeStyle.SecondaryText, ref _)) {
+            var writer = token.Alignment.HasValue ? new StringWriter() : output;
 
             // If the value is a scalar string, support some additional formats: 'u' for uppercase
             // and 'w' for lowercase.
             if (propertyValue is ScalarValue sv && sv.Value is string literalString) {
-                var cased = Casing.Format(literalString, _token.Format);
+                var cased = Casing.Format(literalString, token.Format);
                 writer.Write(cased);
             } else {
-                propertyValue.Render(writer, _token.Format, _formatProvider);
+                propertyValue.Render(writer, token.Format, formatProvider);
             }
 
-            if (_token.Alignment.HasValue) {
+            if (token.Alignment.HasValue) {
                 var str = writer.ToString();
-                Padding.Apply(output, str, _token.Alignment);
+                Padding.Apply(output, str, token.Alignment);
             }
         }
     }

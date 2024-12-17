@@ -1,26 +1,16 @@
-﻿using System;
-using Serilog.Core;
+﻿using Serilog.Core;
 using Serilog.Events;
 
 namespace Serilog.Sinks.LINQPad.Support;
 
-public class DelegatingSink : ILogEventSink
+public class DelegatingSink(Action<LogEvent> write) : ILogEventSink
 {
-    private readonly Action<LogEvent> _write;
-
-    public DelegatingSink(Action<LogEvent> write)
-    {
-        _write = write ?? throw new ArgumentNullException(nameof(write));
-    }
-
     public void Emit(LogEvent logEvent)
-    {
-        _write(logEvent);
-    }
+        => _write(logEvent);
 
-    public static LogEvent GetLogEvent(Action<ILogger> writeAction)
+    public static LogEvent? GetLogEvent(Action<ILogger> writeAction)
     {
-        LogEvent result = null;
+        LogEvent? result = null;
         var logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
             .WriteTo.Sink(new DelegatingSink(le => result = le))
@@ -29,4 +19,6 @@ public class DelegatingSink : ILogEventSink
         writeAction(logger);
         return result;
     }
+    
+    private readonly Action<LogEvent> _write = write ?? throw new ArgumentNullException(nameof(write));
 }

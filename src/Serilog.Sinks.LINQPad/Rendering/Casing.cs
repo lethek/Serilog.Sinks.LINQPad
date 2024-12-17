@@ -24,11 +24,9 @@ internal static class Casing
     /// <param name="format">Format string.</param>
     /// <returns>The provided <paramref name="value"/> with formatting applied.</returns>
     public static string Format(string value, string format = null)
-    {
-        switch (format) {
-            case "u": return value.ToUpperInvariant();
-            case "w": return value.ToLowerInvariant();
-            default: return value;
-        }
-    }
+        => format switch {
+            "u" => value.ToUpperInvariant(),
+            "w" => value.ToLowerInvariant(),
+            _ => value
+        };
 }

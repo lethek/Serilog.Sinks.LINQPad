@@ -20,30 +20,24 @@ namespace Serilog.Sinks.LINQPad.Themes;
 /// <summary>
 /// Styling applied using the <see cref="System.Drawing.Color"/> struct.
 /// </summary>
-public struct LINQPadThemeStyle
+public struct LINQPadThemeStyle(
+    Color? foreground = null,
+    Color? background = null,
+    bool? bold = null,
+    bool? italic = null)
 {
     /// <summary>
     /// The foreground color to apply.
     /// </summary>
-    public Color? Foreground;
+    public Color? Foreground = foreground;
 
     /// <summary>
     /// The background color to apply.
     /// </summary>
-    public Color? Background;
+    public Color? Background = background;
 
-    public bool Bold;
-    public bool Italic;
+    public bool Bold = bold.HasValue && bold.Value;
+    public bool Italic = italic.HasValue && italic.Value;
 
-
-    public LINQPadThemeStyle(Color? foreground = null, Color? background = null, bool? bold = null, bool? italic = null)
-    {
-        Foreground = foreground;
-        Background = background;
-        Bold = bold.HasValue && bold.Value;
-        Italic = italic.HasValue && italic.Value;
-    }
-
-
-    public static readonly LINQPadThemeStyle None = new LINQPadThemeStyle();
+    public static readonly LINQPadThemeStyle None = new();
 }

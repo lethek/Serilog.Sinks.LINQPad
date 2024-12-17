@@ -34,15 +34,16 @@ internal class PropertiesTokenRenderer : OutputTemplateTokenRenderer
         var isJson = false;
 
         if (token.Format != null) {
-            for (var i = 0; i < token.Format.Length; ++i) {
-                if (token.Format[i] == 'j') {
+            foreach (var t in token.Format)
+            {
+                if (t == 'j') {
                     isJson = true;
                 }
             }
         }
 
         _valueFormatter = isJson
-            ? (ThemedValueFormatter)new ThemedJsonValueFormatter(theme, formatProvider)
+            ? new ThemedJsonValueFormatter(theme, formatProvider)
             : new ThemedDisplayValueFormatter(theme, formatProvider);
     }
 

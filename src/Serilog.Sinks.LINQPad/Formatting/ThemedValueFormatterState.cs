@@ -22,5 +22,5 @@ internal struct ThemedValueFormatterState
     public string Format;
     public bool IsTopLevel;
 
-    public ThemedValueFormatterState Nest() => new ThemedValueFormatterState { Output = Output };
+    public ThemedValueFormatterState Nest() => new() { Output = Output };
 }

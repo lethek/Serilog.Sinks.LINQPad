@@ -1,5 +1,4 @@
-﻿using System.IO;
-using Serilog.Events;
+﻿using Serilog.Events;
 using Serilog.Sinks.LINQPad.Themes;
 using Xunit;
 
@@ -13,7 +12,7 @@ public class ThemedDisplayValueFormatterTests
     public void StringFormattingIsApplied(string value, string format, string expected)
     {
         var formatter = new ThemedDisplayValueFormatter(DefaultThemes.None, null);
-        var sw = new StringWriter();
+        using var sw = new StringWriter();
         formatter.FormatLiteralValue(new ScalarValue(value), sw, format);
         var actual = sw.ToString();
         Assert.Equal(expected, actual);

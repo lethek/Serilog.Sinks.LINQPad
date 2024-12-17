@@ -89,5 +89,5 @@ public class LINQPadTheme : ConsoleTheme
 
     protected LINQPadThemeStyle CurrColors;
     protected LINQPadThemeStyle NextColors;
-    protected int SpanDepth = 0;
+    protected int SpanDepth;
 }

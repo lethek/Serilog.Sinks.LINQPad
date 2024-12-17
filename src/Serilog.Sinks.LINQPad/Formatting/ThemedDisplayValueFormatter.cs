@@ -21,15 +21,11 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Formatting;
 
-internal class ThemedDisplayValueFormatter : ThemedValueFormatter
+internal class ThemedDisplayValueFormatter(ConsoleTheme theme, IFormatProvider formatProvider)
+    : ThemedValueFormatter(theme)
 {
-
-    public ThemedDisplayValueFormatter(ConsoleTheme theme, IFormatProvider formatProvider) : base(theme)
-        => _formatProvider = formatProvider;
-
-
     public override ThemedValueFormatter SwitchTheme(ConsoleTheme theme)
-        => new ThemedDisplayValueFormatter(theme, _formatProvider);
+        => new ThemedDisplayValueFormatter(theme, formatProvider);
 
 
     protected override int VisitScalarValue(ThemedValueFormatterState state, ScalarValue scalar)
@@ -54,7 +50,8 @@ internal class ThemedDisplayValueFormatter : ThemedValueFormatter
         }
 
         var delim = String.Empty;
-        for (var index = 0; index < sequence.Elements.Count; ++index) {
+        foreach (var element in sequence.Elements)
+        {
             if (delim.Length != 0) {
                 using (ApplyStyle(state.Output, ConsoleThemeStyle.TertiaryText, ref count)) {
                     state.Output.Write(delim);
@@ -62,7 +59,7 @@ internal class ThemedDisplayValueFormatter : ThemedValueFormatter
             }
 
             delim = ", ";
-            Visit(state, sequence.Elements[index]);
+            Visit(state, element);
         }
 
         using (ApplyStyle(state.Output, ConsoleThemeStyle.TertiaryText, ref count)) {
@@ -90,7 +87,8 @@ internal class ThemedDisplayValueFormatter : ThemedValueFormatter
         }
 
         var delim = String.Empty;
-        for (var index = 0; index < structure.Properties.Count; ++index) {
+        foreach (var property in structure.Properties)
+        {
             if (delim.Length != 0) {
                 using (ApplyStyle(state.Output, ConsoleThemeStyle.TertiaryText, ref count)) {
                     state.Output.Write(delim);
@@ -98,8 +96,6 @@ internal class ThemedDisplayValueFormatter : ThemedValueFormatter
             }
 
             delim = ", ";
-
-            var property = structure.Properties[index];
 
             using (ApplyStyle(state.Output, ConsoleThemeStyle.Name, ref count)) {
                 state.Output.Write(property.Name);
@@ -189,7 +185,7 @@ internal class ThemedDisplayValueFormatter : ThemedValueFormatter
                 value is decimal || value is byte || value is sbyte || value is short ||
                 value is ushort || value is float || value is double) {
                 using (ApplyStyle(output, ConsoleThemeStyle.Number, ref count)) {
-                    scalar.Render(output, format, _formatProvider);
+                    scalar.Render(output, format, formatProvider);
                 }
                 return count;
             }
@@ -213,12 +209,9 @@ internal class ThemedDisplayValueFormatter : ThemedValueFormatter
         }
 
         using (ApplyStyle(output, ConsoleThemeStyle.Scalar, ref count)) {
-            scalar.Render(output, format, _formatProvider);
+            scalar.Render(output, format, formatProvider);
         }
 
         return count;
     }
-
-
-    private readonly IFormatProvider _formatProvider;
 }

@@ -17,19 +17,8 @@ using System.IO;
 
 namespace Serilog.Sinks.LINQPad.Themes;
 
-internal struct StyleReset : IDisposable
+internal readonly struct StyleReset(ConsoleTheme theme, TextWriter output) : IDisposable
 {
-    public StyleReset(ConsoleTheme theme, TextWriter output)
-    {
-        _theme = theme;
-        _output = output;
-    }
-
-
     public void Dispose()
-        => _theme.Reset(_output);
-
-
-    private readonly ConsoleTheme _theme;
-    private readonly TextWriter _output;
+        => theme.Reset(output);
 }

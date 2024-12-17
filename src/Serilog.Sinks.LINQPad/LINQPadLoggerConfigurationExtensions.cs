@@ -20,8 +20,9 @@ using Serilog.Sinks.LINQPad;
 using Serilog.Sinks.LINQPad.Output;
 using Serilog.Sinks.LINQPad.Themes;
 using System;
-using System.Reflection;
+using Serilog.Sinks.LINQPad.Internals;
 
+// ReSharper disable once CheckNamespace
 namespace Serilog;
 
 /// <summary>
@@ -64,7 +65,7 @@ public static class ConsoleLoggerConfigurationExtensions
             throw new ArgumentNullException(nameof(outputTemplate));
         }
 
-        var appliedTheme = theme ?? (_isDarkThemeEnabled.Value ? DefaultThemes.LINQPadDark : DefaultThemes.LINQPadLiterate);
+        var appliedTheme = theme ?? (LINQPadApi.IsDarkThemeEnabled ? DefaultThemes.LINQPadDark : DefaultThemes.LINQPadLiterate);
 
         var formatter = new OutputTemplateRenderer(appliedTheme, outputTemplate, formatProvider);
         return sinkConfiguration.Sink(new LINQPadSink(appliedTheme, formatter, dumpContainer), restrictedToMinimumLevel, levelSwitch);
@@ -99,15 +100,4 @@ public static class ConsoleLoggerConfigurationExtensions
 
         return sinkConfiguration.Sink(new LINQPadSink(DefaultThemes.None, formatter, dumpContainer), restrictedToMinimumLevel, levelSwitch);
     }
-
-
-    private static Lazy<bool> _isDarkThemeEnabled = new(() => {
-#if NETCOREAPP3_1_OR_GREATER
-            var utilType = Type.GetType("LINQPad.Util, LINQPad.Runtime");
-#elif NET48_OR_GREATER
-        var utilType = Type.GetType("LINQPad.Util, LINQPad");
-#endif
-        var isDarkThemeEnabledProperty = utilType!.GetProperty("IsDarkThemeEnabled", BindingFlags.Static | BindingFlags.Public);
-        return (bool)isDarkThemeEnabledProperty!.GetValue(null, null);
-    });
 }

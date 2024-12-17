@@ -22,14 +22,10 @@ using Serilog.Formatting.Display;
 using Serilog.Parsing;
 using Serilog.Sinks.LINQPad.Themes;
 
-
 namespace Serilog.Sinks.LINQPad.Output;
 
 internal class OutputTemplateRenderer : ITextFormatter
 {
-    private readonly OutputTemplateTokenRenderer[] _renderers;
-
-
     public OutputTemplateRenderer(ConsoleTheme theme, string outputTemplate, IFormatProvider formatProvider)
     {
         if (outputTemplate == null) {
@@ -89,4 +85,7 @@ internal class OutputTemplateRenderer : ITextFormatter
             renderer.Render(logEvent, output);
         }
     }
+    
+    
+    private readonly OutputTemplateTokenRenderer[] _renderers;
 }

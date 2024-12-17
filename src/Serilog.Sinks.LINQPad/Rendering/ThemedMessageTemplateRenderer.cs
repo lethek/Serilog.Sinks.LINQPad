@@ -23,17 +23,8 @@ using Serilog.Sinks.LINQPad.Themes;
 
 namespace Serilog.Sinks.LINQPad.Rendering;
 
-internal class ThemedMessageTemplateRenderer
+internal class ThemedMessageTemplateRenderer(ConsoleTheme theme, ThemedValueFormatter valueFormatter, bool isLiteral)
 {
-    public ThemedMessageTemplateRenderer(ConsoleTheme theme, ThemedValueFormatter valueFormatter, bool isLiteral)
-    {
-        _theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        _valueFormatter = valueFormatter;
-        _isLiteral = isLiteral;
-        _unthemedValueFormatter = valueFormatter.SwitchTheme(NoTheme);
-    }
-
-
     public int Render(MessageTemplate template, IReadOnlyDictionary<string, LogEventPropertyValue> properties, TextWriter output)
     {
         var count = 0;
@@ -55,7 +46,6 @@ internal class ThemedMessageTemplateRenderer
         using (_theme.Apply(output, ConsoleThemeStyle.Text, ref count)) {
             output.Write(tt.Text);
         }
-
         return count;
     }
 
@@ -67,21 +57,20 @@ internal class ThemedMessageTemplateRenderer
             using (_theme.Apply(output, ConsoleThemeStyle.Invalid, ref count)) {
                 output.Write(pt.ToString());
             }
-
             return count;
         }
 
         if (!pt.Alignment.HasValue) {
-            return RenderValue(_theme, _valueFormatter, propertyValue, output, pt.Format);
+            return RenderValue(_theme, valueFormatter, propertyValue, output, pt.Format);
         }
 
-        var valueOutput = new StringWriter();
+        using var valueOutput = new StringWriter();
 
         if (!_theme.CanBuffer) {
             return RenderAlignedPropertyTokenUnbuffered(pt, output, propertyValue);
         }
 
-        var invisibleCount = RenderValue(_theme, _valueFormatter, propertyValue, valueOutput, pt.Format);
+        var invisibleCount = RenderValue(_theme, valueFormatter, propertyValue, valueOutput, pt.Format);
 
         var value = valueOutput.ToString();
 
@@ -97,45 +86,41 @@ internal class ThemedMessageTemplateRenderer
 
     private int RenderAlignedPropertyTokenUnbuffered(PropertyToken pt, TextWriter output, LogEventPropertyValue propertyValue)
     {
-        var valueOutput = new StringWriter();
+        using var valueOutput = new StringWriter();
         RenderValue(NoTheme, _unthemedValueFormatter, propertyValue, valueOutput, pt.Format);
 
         var valueLength = valueOutput.ToString().Length;
         // ReSharper disable once PossibleInvalidOperationException
         if (valueLength >= pt.Alignment.Value.Width) {
-            return RenderValue(_theme, _valueFormatter, propertyValue, output, pt.Format);
+            return RenderValue(_theme, valueFormatter, propertyValue, output, pt.Format);
         }
 
         if (pt.Alignment.Value.Direction == AlignmentDirection.Left) {
-            var invisible = RenderValue(_theme, _valueFormatter, propertyValue, output, pt.Format);
+            var invisible = RenderValue(_theme, valueFormatter, propertyValue, output, pt.Format);
             Padding.Apply(output, String.Empty, pt.Alignment.Value.Widen(-valueLength));
             return invisible;
         }
 
         Padding.Apply(output, String.Empty, pt.Alignment.Value.Widen(-valueLength));
-        return RenderValue(_theme, _valueFormatter, propertyValue, output, pt.Format);
+        return RenderValue(_theme, valueFormatter, propertyValue, output, pt.Format);
     }
 
 
-    private int RenderValue(ConsoleTheme theme, ThemedValueFormatter valueFormatter, LogEventPropertyValue propertyValue, TextWriter output, string format)
+    private int RenderValue(ConsoleTheme theme, ThemedValueFormatter themedValueFormatter, LogEventPropertyValue propertyValue, TextWriter output, string format)
     {
-        if (_isLiteral && propertyValue is ScalarValue sv && sv.Value is string) {
+        if (isLiteral && propertyValue is ScalarValue sv && sv.Value is string) {
             var count = 0;
             using (theme.Apply(output, ConsoleThemeStyle.String, ref count)) {
                 output.Write(sv.Value);
             }
-
             return count;
         }
-
-        return valueFormatter.Format(propertyValue, output, format, _isLiteral);
+        return themedValueFormatter.Format(propertyValue, output, format, isLiteral);
     }
 
 
-    private readonly bool _isLiteral;
-    private readonly ConsoleTheme _theme;
-    private readonly ThemedValueFormatter _valueFormatter;
-    private readonly ThemedValueFormatter _unthemedValueFormatter;
+    private readonly ConsoleTheme _theme = theme ?? throw new ArgumentNullException(nameof(theme));
+    private readonly ThemedValueFormatter _unthemedValueFormatter = valueFormatter.SwitchTheme(NoTheme);
 
 
     private static readonly ConsoleTheme NoTheme = new EmptyConsoleTheme();
